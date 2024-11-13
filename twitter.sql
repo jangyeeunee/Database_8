@@ -20,8 +20,10 @@ CREATE TABLE POST
     id        INT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
     content   TEXT NOT NULL,
     user_id   VARCHAR(15),
+    repost_id INT NULL,
     create_at DATETIME(6),
-    FOREIGN KEY (user_id) REFERENCES USER (id)
+    FOREIGN KEY (user_id) REFERENCES USER (id),
+    FOREIGN KEY (repost_id) REFERENCES POST (id)
 );
 
 CREATE TABLE POST_LIKE
