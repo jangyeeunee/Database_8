@@ -9,8 +9,8 @@ CREATE TABLE USER
     pwd          VARCHAR(15) NOT NULL,
     first_name   VARCHAR(15),
     last_name    VARCHAR(15),
-    email        VARCHAR(20) NOT NULL,
-    gender       VARCHAR(5),
+    email        VARCHAR(40) NOT NULL,
+    gender       VARCHAR(10),
     phone_number VARCHAR(11),
     birth        DATE
 );
