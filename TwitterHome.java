@@ -63,13 +63,13 @@ public class TwitterHome extends JFrame {
         // Bottom panel (white background with GridLayout for navigation buttons)
         JPanel bottomPanel = new JPanel();
         bottomPanel.setBackground(Color.WHITE);
-        bottomPanel.setPreferredSize(new Dimension(400, 70));
+        bottomPanel.setPreferredSize(new Dimension(400, 50));
         bottomPanel.setLayout(new GridLayout(1, 4));
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
 
         // Home Button
         Image homeImg = home.getImage();
-        Image changeHome = homeImg.getScaledInstance(38, 38, Image.SCALE_SMOOTH);
+        Image changeHome = homeImg.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
         ImageIcon changeHomeIcon = new ImageIcon(changeHome);
         JButton homeButton = new JButton(changeHomeIcon);
         homeButton.setBorderPainted(false);
@@ -78,7 +78,7 @@ public class TwitterHome extends JFrame {
         bottomPanel.add(homeButton);
 
         Image pressedHomeImg = homePressed.getImage();
-        Image changeHomePressedImg = pressedHomeImg.getScaledInstance(38, 38, Image.SCALE_SMOOTH);
+        Image changeHomePressedImg = pressedHomeImg.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
         ImageIcon changePressedIcon = new ImageIcon(changeHomePressedImg);
         homeButton.setPressedIcon(changePressedIcon);
 
@@ -93,7 +93,7 @@ public class TwitterHome extends JFrame {
 
         // Search Button
         Image searchImg = search.getImage();
-        Image changeSearch = searchImg.getScaledInstance(38, 38, Image.SCALE_SMOOTH);
+        Image changeSearch = searchImg.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
         ImageIcon changeSearchIcon = new ImageIcon(changeSearch);
         JButton searchButton = new JButton(changeSearchIcon);
         searchButton.setBorderPainted(false);
@@ -102,7 +102,7 @@ public class TwitterHome extends JFrame {
         bottomPanel.add(searchButton);
 
         Image pressedSearchImg = searchPressed.getImage();
-        Image changeSearchPressedImg = pressedSearchImg.getScaledInstance(38, 38, Image.SCALE_SMOOTH);
+        Image changeSearchPressedImg = pressedSearchImg.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
         ImageIcon changeSearchPressedIcon = new ImageIcon(changeSearchPressedImg);
         searchButton.setPressedIcon(changeSearchPressedIcon);
 
@@ -117,7 +117,7 @@ public class TwitterHome extends JFrame {
 
         // Bookmark Button
         Image bookmarkImg = bookmark.getImage();
-        Image changeBookmark = bookmarkImg.getScaledInstance(35, 38, Image.SCALE_SMOOTH);
+        Image changeBookmark = bookmarkImg.getScaledInstance(27, 30, Image.SCALE_SMOOTH);
         ImageIcon changeBookmarkIcon = new ImageIcon(changeBookmark);
         JButton bookmarkButton = new JButton(changeBookmarkIcon);
         bookmarkButton.setBorderPainted(false);
@@ -126,7 +126,7 @@ public class TwitterHome extends JFrame {
         bottomPanel.add(bookmarkButton);
 
         Image pressedBookmarkImg = bookmarkPressed.getImage();
-        Image changeBookmarkPressedImg = pressedBookmarkImg.getScaledInstance(35, 38, Image.SCALE_SMOOTH);
+        Image changeBookmarkPressedImg = pressedBookmarkImg.getScaledInstance(27, 30, Image.SCALE_SMOOTH);
         ImageIcon changeBookmarkPressedIcon = new ImageIcon(changeBookmarkPressedImg);
         bookmarkButton.setPressedIcon(changeBookmarkPressedIcon);
 
@@ -141,7 +141,7 @@ public class TwitterHome extends JFrame {
 
         // Add Post Button
         Image addPostImg = addPost.getImage();
-        Image changeAddPost = addPostImg.getScaledInstance(38, 38, Image.SCALE_SMOOTH);
+        Image changeAddPost = addPostImg.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
         ImageIcon changeAddPostIcon = new ImageIcon(changeAddPost);
         JButton addPostButton = new JButton(changeAddPostIcon);
         addPostButton.setBorderPainted(false);
