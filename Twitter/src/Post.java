@@ -15,7 +15,7 @@ public class Post extends JPanel {
         userProfile.setLayout(new FlowLayout(FlowLayout.CENTER));
 
         // Load and resize the profile image
-        ImageIcon originalIcon = new ImageIcon("images/profile.jpg");
+        ImageIcon originalIcon = new ImageIcon("icon/profile.jpg");
         Image scaledImage = originalIcon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH); // Set desired width and height
         ImageIcon scaledIcon = new ImageIcon(scaledImage);
 
