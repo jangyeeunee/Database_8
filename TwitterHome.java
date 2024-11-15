@@ -1,17 +1,16 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class TwitterHome extends JFrame {
-    ImageIcon home = new ImageIcon("icon/homeIcon.png");
-    ImageIcon homePressed = new ImageIcon("icon/homePressed.png");
-    ImageIcon twitterIcon = new ImageIcon("icon/twitterIcon.png");
-    ImageIcon search = new ImageIcon("icon/searchIcon.png");
-    ImageIcon searchPressed = new ImageIcon("icon/searchPressed.png");
-    ImageIcon bookmark = new ImageIcon("icon/bookmarkIcon.png");
-    ImageIcon bookmarkPressed = new ImageIcon("icon/bookmarkPressed.png");
-    ImageIcon addPost = new ImageIcon("icon/addPostIcon.png");
+    private CardLayout cardLayout;
+    private JPanel centerPanel;
+
+    // Buttons for bottom panel
+    private JButton homeButton;
+    private JButton bookmarkButton;
+
+    // Follow label
+    private JLabel followLabel;
 
     public TwitterHome() {
         setTitle("Twitter Feed");
@@ -19,150 +18,172 @@ public class TwitterHome extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout());
+        // Main Panel
+        JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(new Color(230, 245, 255));
 
-        // Top panel (white background)
-        JPanel topPanel = new JPanel();
-        topPanel.setBackground(Color.WHITE);
-        topPanel.setPreferredSize(new Dimension(400, 50));
-        topPanel.setLayout(new BorderLayout());
-
-        Image img = twitterIcon.getImage();
-        Image changeImg = img.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        ImageIcon changeIcon = new ImageIcon(changeImg);
-
-        JLabel centerImageLabel = new JLabel();
-        centerImageLabel.setIcon(changeIcon);
-        centerImageLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        centerImageLabel.setSize(5, 5);
-
-        topPanel.add(centerImageLabel, BorderLayout.CENTER);
+        // Top Panel (Fixed)
+        JPanel topPanel = createTopPanel();
         mainPanel.add(topPanel, BorderLayout.NORTH);
 
-        // Feed panel
-        JPanel feedPanel = new JPanel();
-        feedPanel.setLayout(new BoxLayout(feedPanel, BoxLayout.Y_AXIS));
-        feedPanel.setBackground(new Color(230, 245, 255));
+        // Center Panel with CardLayout
+        cardLayout = new CardLayout();
+        centerPanel = new JPanel(cardLayout);
 
-        for (int i = 0; i < 20; i++) {
-            JPanel emptySection = new JPanel();
-            emptySection.setPreferredSize(new Dimension(400, 100));
-            emptySection.setBackground(new Color(230, 245, 255));
-            feedPanel.add(emptySection);
-        }
+        // Add Home and Bookmark Pages to Center Panel
+        centerPanel.add(createHomePage(), "Home");
+        centerPanel.add(new BookmarkPage(this), "Bookmark");
 
-        JScrollPane scrollPane = new JScrollPane(feedPanel);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
 
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
-
-        // Bottom panel (white background with GridLayout for navigation buttons)
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setBackground(Color.WHITE);
-        bottomPanel.setPreferredSize(new Dimension(400, 50));
-        bottomPanel.setLayout(new GridLayout(1, 4));
+        // Bottom Panel (Fixed)
+        JPanel bottomPanel = createBottomPanel();
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
-
-        // Home Button
-        Image homeImg = home.getImage();
-        Image changeHome = homeImg.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        ImageIcon changeHomeIcon = new ImageIcon(changeHome);
-        JButton homeButton = new JButton(changeHomeIcon);
-        homeButton.setBorderPainted(false);
-        homeButton.setFocusPainted(false);
-        homeButton.setContentAreaFilled(false);
-        bottomPanel.add(homeButton);
-
-        Image pressedHomeImg = homePressed.getImage();
-        Image changeHomePressedImg = pressedHomeImg.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        ImageIcon changePressedIcon = new ImageIcon(changeHomePressedImg);
-        homeButton.setPressedIcon(changePressedIcon);
-
-        // Add ActionListener for Home Button
-        homeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Navigating to Home Feed...");
-                // Here you could implement navigation logic to show the Home Feed
-            }
-        });
-
-        // Search Button
-        Image searchImg = search.getImage();
-        Image changeSearch = searchImg.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        ImageIcon changeSearchIcon = new ImageIcon(changeSearch);
-        JButton searchButton = new JButton(changeSearchIcon);
-        searchButton.setBorderPainted(false);
-        searchButton.setFocusPainted(false);
-        searchButton.setContentAreaFilled(false);
-        bottomPanel.add(searchButton);
-
-        Image pressedSearchImg = searchPressed.getImage();
-        Image changeSearchPressedImg = pressedSearchImg.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        ImageIcon changeSearchPressedIcon = new ImageIcon(changeSearchPressedImg);
-        searchButton.setPressedIcon(changeSearchPressedIcon);
-
-        // Add ActionListener for Search Button
-        searchButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Navigating to Search...");
-                // Implement navigation logic for Search
-            }
-        });
-
-        // Bookmark Button
-        Image bookmarkImg = bookmark.getImage();
-        Image changeBookmark = bookmarkImg.getScaledInstance(27, 30, Image.SCALE_SMOOTH);
-        ImageIcon changeBookmarkIcon = new ImageIcon(changeBookmark);
-        JButton bookmarkButton = new JButton(changeBookmarkIcon);
-        bookmarkButton.setBorderPainted(false);
-        bookmarkButton.setFocusPainted(false);
-        bookmarkButton.setContentAreaFilled(false);
-        bottomPanel.add(bookmarkButton);
-
-        Image pressedBookmarkImg = bookmarkPressed.getImage();
-        Image changeBookmarkPressedImg = pressedBookmarkImg.getScaledInstance(27, 30, Image.SCALE_SMOOTH);
-        ImageIcon changeBookmarkPressedIcon = new ImageIcon(changeBookmarkPressedImg);
-        bookmarkButton.setPressedIcon(changeBookmarkPressedIcon);
-
-        // Add ActionListener for Bookmark Button
-        bookmarkButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Navigating to Bookmarks...");
-                // Implement navigation logic for Bookmarks
-            }
-        });
-
-        // Add Post Button
-        Image addPostImg = addPost.getImage();
-        Image changeAddPost = addPostImg.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        ImageIcon changeAddPostIcon = new ImageIcon(changeAddPost);
-        JButton addPostButton = new JButton(changeAddPostIcon);
-        addPostButton.setBorderPainted(false);
-        addPostButton.setFocusPainted(false);
-        addPostButton.setContentAreaFilled(false);
-        bottomPanel.add(addPostButton);
-
-        // Add ActionListener for Add Post Button
-        addPostButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Navigating to Add Post...");
-                // Implement navigation logic to show Add Post screen
-            }
-        });
 
         add(mainPanel);
         setVisible(true);
     }
 
+    private JPanel createTopPanel() {
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBackground(Color.WHITE);
+        topPanel.setPreferredSize(new Dimension(400, 80));
+
+        // Twitter Icon
+        JLabel twitterIconLabel = new JLabel();
+        ImageIcon twitterIcon = new ImageIcon("icon/twitterIcon.png");
+        Image twitterImage = twitterIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+        twitterIconLabel.setIcon(new ImageIcon(twitterImage));
+        twitterIconLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        topPanel.add(twitterIconLabel, BorderLayout.CENTER);
+
+        // Follow Label
+        JPanel followPanel = new JPanel(new GridBagLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                g2.setColor(Color.WHITE);
+                g2.fillRoundRect(5, 5, getWidth() - 10, getHeight() - 10, 20, 20);
+
+                g2.setColor(Color.LIGHT_GRAY);
+                g2.drawRoundRect(5, 5, getWidth() - 10, getHeight() - 10, 20, 20);
+            }
+        };
+        followPanel.setPreferredSize(new Dimension(400, 30));
+        followPanel.setOpaque(false);
+
+        followLabel = new JLabel("Follow"); // Dynamic label for updates
+        followLabel.setForeground(Color.DARK_GRAY);
+        followLabel.setFont(new Font("Arial", Font.BOLD | Font.ITALIC, 13));
+        followPanel.add(followLabel);
+
+        topPanel.add(followPanel, BorderLayout.SOUTH);
+        return topPanel;
+    }
+
+    private JPanel createBottomPanel() {
+        JPanel bottomPanel = new JPanel(new GridLayout(1, 4));
+        bottomPanel.setBackground(Color.WHITE);
+        bottomPanel.setPreferredSize(new Dimension(400, 50));
+
+        // Home Button
+        homeButton = createIconButton("icon/homePressed.png");
+        homeButton.addActionListener(e -> {
+            updateBottomIcons("Home");
+            updateFollowLabel("Follow"); // Update Follow label for Home
+            cardLayout.show(centerPanel, "Home");
+        });
+        bottomPanel.add(homeButton);
+
+        // Search Button (Placeholder)
+        JButton searchButton = createIconButton("icon/searchIcon.png");
+        bottomPanel.add(searchButton);
+
+        // Bookmark Button
+        bookmarkButton = createIconButton("icon/bookmarkIcon.png");
+        bookmarkButton.addActionListener(e -> {
+            updateBottomIcons("Bookmark");
+            updateFollowLabel("Bookmarks"); // Update Follow label for Bookmark
+            cardLayout.show(centerPanel, "Bookmark");
+        });
+        bottomPanel.add(bookmarkButton);
+
+        // Add Post Button (Placeholder)
+        JButton addPostButton = createIconButton("icon/addPostIcon.png");
+        bottomPanel.add(addPostButton);
+
+        return bottomPanel;
+    }
+
+    private JPanel createHomePage() {
+        JPanel homePage = new JPanel();
+        homePage.setLayout(new BoxLayout(homePage, BoxLayout.Y_AXIS));
+        homePage.setBackground(new Color(230, 245, 255));
+
+        for (int i = 1; i <= 20; i++) {
+            JPanel postPanel = new JPanel();
+            postPanel.setLayout(new BorderLayout());
+            postPanel.setPreferredSize(new Dimension(350, 70));
+            postPanel.setMaximumSize(new Dimension(350, 70));
+            postPanel.setBackground(Color.WHITE);
+            postPanel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+                    BorderFactory.createEmptyBorder(10, 10, 10, 10)
+            ));
+
+            JLabel postLabel = new JLabel("Post #" + i + ": This is a sample post.");
+            postLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+            postPanel.add(postLabel, BorderLayout.CENTER);
+
+            homePage.add(Box.createVerticalStrut(10)); // Add spacing between posts
+            homePage.add(postPanel);
+        }
+
+        JScrollPane scrollPane = new JScrollPane(homePage);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.add(scrollPane, BorderLayout.CENTER);
+
+        return wrapper;
+    }
+
+    private JButton createIconButton(String iconPath) {
+        ImageIcon icon = new ImageIcon(iconPath);
+        Image iconImage = icon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+        ImageIcon resizedIcon = new ImageIcon(iconImage);
+
+        JButton button = new JButton(resizedIcon);
+        button.setBorderPainted(false);
+        button.setFocusPainted(false);
+        button.setContentAreaFilled(false);
+
+        return button;
+    }
+
+    public void updateBottomIcons(String currentPage) {
+        // Update Home Button Icon
+        ImageIcon homeIcon = new ImageIcon(currentPage.equals("Home") ? "icon/homePressed.png" : "icon/homeIcon.png");
+        Image homeImage = homeIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+        homeButton.setIcon(new ImageIcon(homeImage));
+
+        // Update Bookmark Button Icon
+        ImageIcon bookmarkIcon = new ImageIcon(currentPage.equals("Bookmark") ? "icon/bookmarkPressed.png" : "icon/bookmarkIcon.png");
+        Image bookmarkImage = bookmarkIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+        bookmarkButton.setIcon(new ImageIcon(bookmarkImage));
+    }
+
+    public void updateFollowLabel(String text) {
+        followLabel.setText(text); // Update the Follow label dynamically
+    }
+
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new TwitterHome());
+        SwingUtilities.invokeLater(TwitterHome::new);
     }
 }
+
