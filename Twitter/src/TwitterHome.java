@@ -8,6 +8,9 @@ public class TwitterHome extends JFrame {
     // Buttons for bottom panel
     private JButton homeButton;
     private JButton bookmarkButton;
+    private JButton searchButton;
+    private JButton userButton;
+    private JButton addPostButton;
 
     // Follow label
     private JLabel followLabel;
@@ -33,6 +36,7 @@ public class TwitterHome extends JFrame {
         // Add Home and Bookmark Pages to Center Panel
         centerPanel.add(createHomePage(), "Home");
         centerPanel.add(new BookmarkPage(this), "Bookmark");
+
 
         mainPanel.add(centerPanel, BorderLayout.CENTER);
 
@@ -85,7 +89,7 @@ public class TwitterHome extends JFrame {
     }
 
     private JPanel createBottomPanel() {
-        JPanel bottomPanel = new JPanel(new GridLayout(1, 4));
+        JPanel bottomPanel = new JPanel(new GridLayout(1, 5));
         bottomPanel.setBackground(Color.WHITE);
         bottomPanel.setPreferredSize(new Dimension(400, 50));
 
@@ -99,8 +103,18 @@ public class TwitterHome extends JFrame {
         bottomPanel.add(homeButton);
 
         // Search Button (Placeholder)
-        JButton searchButton = createIconButton("icon/searchIcon.png");
+        searchButton = createIconButton("icon/searchIcon.png");
+        searchButton.addActionListener(e -> {
+            updateBottomIcons("Search");
+        });
         bottomPanel.add(searchButton);
+
+        // addPost Button (Placeholder)
+        addPostButton = createIconButton("icon/addPostIcon.png");
+        addPostButton.addActionListener(e->{
+            updateBottomIcons("addPost");
+        });
+        bottomPanel.add(addPostButton);
 
         // Bookmark Button
         bookmarkButton = createIconButton("icon/bookmarkIcon.png");
@@ -111,9 +125,12 @@ public class TwitterHome extends JFrame {
         });
         bottomPanel.add(bookmarkButton);
 
-        // Add Post Button (Placeholder)
-        JButton addPostButton = createIconButton("icon/addPostIcon.png");
-        bottomPanel.add(addPostButton);
+        //User Button
+        userButton = createIconButton("icon/userIcon.png");
+        userButton.addActionListener(e->{
+            updateBottomIcons("User");
+        });
+        bottomPanel.add(userButton);
 
         return bottomPanel;
     }
@@ -124,22 +141,8 @@ public class TwitterHome extends JFrame {
         homePage.setBackground(new Color(230, 245, 255));
 
         for (int i = 1; i <= 20; i++) {
-            JPanel postPanel = new JPanel();
-            postPanel.setLayout(new BorderLayout());
-            postPanel.setPreferredSize(new Dimension(350, 70));
-            postPanel.setMaximumSize(new Dimension(350, 70));
-            postPanel.setBackground(Color.WHITE);
-            postPanel.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
-                    BorderFactory.createEmptyBorder(10, 10, 10, 10)
-            ));
-
-            JLabel postLabel = new JLabel("Post #" + i + ": This is a sample post.");
-            postLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-            postPanel.add(postLabel, BorderLayout.CENTER);
-
             homePage.add(Box.createVerticalStrut(10)); // Add spacing between posts
-            homePage.add(postPanel);
+            homePage.add(new Post()); // Add post directly, using Post's size
         }
 
         JScrollPane scrollPane = new JScrollPane(homePage);
@@ -152,6 +155,26 @@ public class TwitterHome extends JFrame {
 
         return wrapper;
     }
+
+
+    // Separate method to create a single post panel
+    private JPanel createPostPanel(int postNumber) {
+        JPanel postPanel = new JPanel();
+        postPanel.setLayout(new BorderLayout());
+        postPanel.setPreferredSize(new Dimension(320, 150)); // Adjusted width and height to fit better
+        postPanel.setMaximumSize(new Dimension(320, 150));
+        postPanel.setBackground(Color.WHITE);
+        postPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
+
+        Post post = new Post();
+        postPanel.add(post, BorderLayout.CENTER); // 'CENTER' 위치에 추가하여 올바르게 표시
+
+        return postPanel;
+    }
+
 
     private JButton createIconButton(String iconPath) {
         ImageIcon icon = new ImageIcon(iconPath);
@@ -176,6 +199,17 @@ public class TwitterHome extends JFrame {
         ImageIcon bookmarkIcon = new ImageIcon(currentPage.equals("Bookmark") ? "icon/bookmarkPressed.png" : "icon/bookmarkIcon.png");
         Image bookmarkImage = bookmarkIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
         bookmarkButton.setIcon(new ImageIcon(bookmarkImage));
+
+        //Update Search Button Icon
+        ImageIcon searchIcon = new ImageIcon(currentPage.equals("Search") ? "icon/searchPressed.png" : "icon/searchIcon.png");
+        Image searchImage = searchIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+        searchButton.setIcon(new ImageIcon(searchImage));
+
+        //Update User Button Icon
+        ImageIcon userIcon = new ImageIcon(currentPage.equals("User") ? "icon/userPressed.png" : "icon/userIcon.png");
+        Image userImage = userIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+        userButton.setIcon(new ImageIcon(userImage));
+
     }
 
     public void updateFollowLabel(String text) {
@@ -186,4 +220,3 @@ public class TwitterHome extends JFrame {
         SwingUtilities.invokeLater(TwitterHome::new);
     }
 }
-

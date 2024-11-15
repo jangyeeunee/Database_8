@@ -12,22 +12,8 @@ public class BookmarkPage extends JPanel {
 
         // Add dummy bookmark items
         for (int i = 1; i <= 20; i++) {
-            JPanel postPanel = new JPanel();
-            postPanel.setLayout(new BorderLayout());
-            postPanel.setPreferredSize(new Dimension(350, 70));
-            postPanel.setMaximumSize(new Dimension(350, 70));
-            postPanel.setBackground(Color.WHITE);
-            postPanel.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
-                    BorderFactory.createEmptyBorder(10, 10, 10, 10)
-            ));
-
-            JLabel postLabel = new JLabel("Post #" + i + ": This is a sample post.");
-            postLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-            postPanel.add(postLabel, BorderLayout.CENTER);
-
             bookmarkPage.add(Box.createVerticalStrut(10)); // Add spacing between posts
-            bookmarkPage.add(postPanel);
+            bookmarkPage.add(new Post()); // Add post directly, using Post's size
         }
 
         // Wrap the content panel in a scroll pane
