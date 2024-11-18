@@ -1,9 +1,15 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public class TwitterHome extends JFrame {
+    private static TwitterHome instance;
+    private List<Post> postList;
     private CardLayout cardLayout;
     private JPanel centerPanel;
+    private JPanel postContainer;
 
     // Buttons for bottom panel
     private JButton homeButton;
@@ -16,6 +22,9 @@ public class TwitterHome extends JFrame {
     private JLabel followLabel;
 
     public TwitterHome() {
+        instance = this;
+
+        postList = new ArrayList<>();
         setTitle("Twitter Feed");
         setSize(400, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -33,10 +42,15 @@ public class TwitterHome extends JFrame {
         cardLayout = new CardLayout();
         centerPanel = new JPanel(cardLayout);
 
-        // Add Home and Bookmark Pages to Center Panel
-        centerPanel.add(createHomePage(), "Home");
-        centerPanel.add(new BookmarkPage(this), "Bookmark");
+        // Create Post Container for Home Page
+        postContainer = new JPanel();
+        postContainer.setLayout(new BoxLayout(postContainer, BoxLayout.Y_AXIS));
+        JScrollPane homeScrollPane = new JScrollPane(postContainer);
+        homeScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        homeScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
+        centerPanel.add(homeScrollPane, "Home");
+        centerPanel.add(new BookmarkPage(this), "Bookmark");
 
         mainPanel.add(centerPanel, BorderLayout.CENTER);
 
@@ -46,6 +60,13 @@ public class TwitterHome extends JFrame {
 
         add(mainPanel);
         setVisible(true);
+    }
+
+    public static TwitterHome getInstance() {
+        if (instance == null) {
+            instance = new TwitterHome();
+        }
+        return instance;
     }
 
     private JPanel createTopPanel() {
@@ -96,11 +117,13 @@ public class TwitterHome extends JFrame {
         // Home Button
         homeButton = createIconButton("icon/homePressed.png");
         homeButton.addActionListener(e -> {
-            updateBottomIcons("Home");
+            updateIcons("Home");
             updateFollowLabel("Follow"); // Update Follow label for Home
             cardLayout.show(centerPanel, "Home");
-            buttonAction action = new buttonAction("Following Post","user1");
-            action.actionPerformed(null);
+
+            // Fetch and display posts
+            dbConnect db = new dbConnect("Following Post", UserInfo.getInstance().getUserId(), null, this);
+            db.getActionDb(); // Following Post 데이터 가져오기
         });
 
         bottomPanel.add(homeButton);
@@ -108,21 +131,21 @@ public class TwitterHome extends JFrame {
         // Search Button (Placeholder)
         searchButton = createIconButton("icon/searchIcon.png");
         searchButton.addActionListener(e -> {
-            updateBottomIcons("Search");
+            updateIcons("Search");
         });
         bottomPanel.add(searchButton);
 
         // addPost Button (Placeholder)
         addPostButton = createIconButton("icon/addPostIcon.png");
         addPostButton.addActionListener(e->{
-            updateBottomIcons("addPost");
+            updateIcons("addPost");
         });
         bottomPanel.add(addPostButton);
 
         // Bookmark Button
         bookmarkButton = createIconButton("icon/bookmarkIcon.png");
         bookmarkButton.addActionListener(e -> {
-            updateBottomIcons("Bookmark");
+            updateIcons("Bookmark");
             updateFollowLabel("Bookmarks"); // Update Follow label for Bookmark
             cardLayout.show(centerPanel, "Bookmark");
         });
@@ -131,55 +154,31 @@ public class TwitterHome extends JFrame {
         //User Button
         userButton = createIconButton("icon/userIcon.png");
         userButton.addActionListener(e->{
-            updateBottomIcons("User");
+            updateIcons("User");
         });
         bottomPanel.add(userButton);
 
         return bottomPanel;
     }
 
-    private JPanel createHomePage() {
-        JPanel homePage = new JPanel();
-        homePage.setLayout(new BoxLayout(homePage, BoxLayout.Y_AXIS));
-        homePage.setBackground(new Color(230, 245, 255));
 
-        for (int i = 1; i <= 20; i++) {
-            homePage.add(Box.createVerticalStrut(10)); // Add spacing between posts
-            homePage.add(new Post()); // Add post directly, using Post's size
+    public void addPostToHome(Post post) {
+        postList.add(post); // Post 리스트에 추가
+        postList.sort(Comparator.comparing(Post::getCreateAt).reversed()); // 최신순으로 정렬
+
+        postContainer.removeAll(); // 기존 UI 초기화
+
+        for (Post sortedPost : postList) {
+            postContainer.add(Box.createVerticalStrut(10)); // Add spacing
+            postContainer.add(sortedPost); // 정렬된 Post 추가
         }
 
-        JScrollPane scrollPane = new JScrollPane(homePage);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.add(scrollPane, BorderLayout.CENTER);
-
-        return wrapper;
+        postContainer.revalidate(); // UI 갱신
+        postContainer.repaint();
     }
 
 
-    // Separate method to create a single post panel
-    private JPanel createPostPanel(int postNumber) {
-        JPanel postPanel = new JPanel();
-        postPanel.setLayout(new BorderLayout());
-        postPanel.setPreferredSize(new Dimension(320, 150)); // Adjusted width and height to fit better
-        postPanel.setMaximumSize(new Dimension(320, 150));
-        postPanel.setBackground(Color.WHITE);
-        postPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        ));
-
-        Post post = new Post();
-        postPanel.add(post, BorderLayout.CENTER); // 'CENTER' 위치에 추가하여 올바르게 표시
-
-        return postPanel;
-    }
-
-
-    private JButton createIconButton(String iconPath) {
+    public static JButton createIconButton(String iconPath) {
         ImageIcon icon = new ImageIcon(iconPath);
         Image iconImage = icon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
         ImageIcon resizedIcon = new ImageIcon(iconImage);
@@ -192,7 +191,7 @@ public class TwitterHome extends JFrame {
         return button;
     }
 
-    public void updateBottomIcons(String currentPage) {
+    public void updateIcons(String currentPage) {
         // Update Home Button Icon
         ImageIcon homeIcon = new ImageIcon(currentPage.equals("Home") ? "icon/homePressed.png" : "icon/homeIcon.png");
         Image homeImage = homeIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);

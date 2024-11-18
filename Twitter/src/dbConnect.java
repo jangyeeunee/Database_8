@@ -4,6 +4,8 @@ import java.sql.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.DatabaseMetaData;
+import java.util.ArrayList;
+import java.util.List;
 
 public class dbConnect {
     private String actionDb;
@@ -51,7 +53,7 @@ public class dbConnect {
                 }
             }
             else if (this.actionDb.equals("Following Post")) {
-                System.out.println("this.actionDB");
+                List<Post> postList = new ArrayList<>();
                 stmt = con.createStatement();
                 String followingPostQuery ="select p.id AS post_id, p.content, p.user_id, p.create_at from follow f join post p on f.followed_id = p.user_id WHERE f.follow_id = \""+UserInfo.getInstance().getUserId()+"\"";
                 rs = stmt.executeQuery(followingPostQuery);
@@ -66,7 +68,17 @@ public class dbConnect {
                     System.out.println("Posted by: " + userId);
                     System.out.println("Created At: " + createAt);
                     System.out.println("------------------------");
+
+                    postList.add(new Post(userId,content,createAt));
                 }
+
+                // TwitterHome 인스턴스에 게시물 리스트 전달
+                SwingUtilities.invokeLater(() -> {
+                    TwitterHome home = TwitterHome.getInstance(); // TwitterHome 싱글톤 인스턴스
+                    for (Post post : postList) {
+                        home.addPostToHome(post);
+                    }
+                });
             } else System.out.println("error");
         } catch (SQLException e) {
             throw new RuntimeException(e);
