@@ -99,7 +99,10 @@ public class TwitterHome extends JFrame {
             updateBottomIcons("Home");
             updateFollowLabel("Follow"); // Update Follow label for Home
             cardLayout.show(centerPanel, "Home");
+            buttonAction action = new buttonAction("Following Post","user1");
+            action.actionPerformed(null);
         });
+
         bottomPanel.add(homeButton);
 
         // Search Button (Placeholder)

@@ -79,7 +79,7 @@ public class TwitterLogin extends JFrame {
         loginButton.addActionListener(e -> {
             String id = usernameField.getText();
             String password = new String(passwordField.getPassword());
-            buttonAction action = new buttonAction("login", id, password);
+            buttonAction action = new buttonAction("login", id, password, this);
             action.actionPerformed(null);
         });
 
