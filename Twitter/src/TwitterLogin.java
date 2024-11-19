@@ -83,7 +83,6 @@ public class TwitterLogin extends JFrame {
             action.actionPerformed(null);
         });
 
-
         // Add the main panel to the frame
         add(panel);
         setVisible(true);

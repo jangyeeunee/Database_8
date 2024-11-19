@@ -15,10 +15,11 @@ public class dbConnect {
         this.Password = Password;
     }
 
-    public void getActionDb() {
+    public User getActionDb() {
         Connection con = null;
         Statement stmt = null;
         ResultSet rs = null;
+        User userInfo = null;
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -37,8 +38,14 @@ public class dbConnect {
                 rs = stmt.executeQuery(s1);
                 if(rs.next()) {
                     System.out.println("login success");
+                    String Id = rs.getString("id");
+                    String Password = rs.getString("pwd");
+                    String email = rs.getString("email");
+                    String birth = rs.getString("birth");
+                    String Gender = rs.getString("gender");
+                    String phoneNumber = rs.getString("phone_number");
                     String name = rs.getString("first_name")+" "+rs.getString("last_name");
-                    System.out.println("user name : " + name);
+                    userInfo = new User(Id,name,email,Password,Gender,phoneNumber,birth);
                 }else{
                     System.out.println("login failed");
                 }
@@ -52,7 +59,7 @@ public class dbConnect {
             if(rs!=null && !rs.isClosed()) rs.close();
         }catch (SQLException e) {e.printStackTrace();}
 
-
+        return userInfo;
     }
 
 }
