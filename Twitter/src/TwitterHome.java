@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -12,7 +13,7 @@ public class TwitterHome extends JFrame {
     private JPanel postContainer;
 
     // Buttons for bottom panel
-    private JButton homeButton;
+    public JButton homeButton;
     private JButton bookmarkButton;
     private JButton searchButton;
     private JButton userButton;
@@ -120,10 +121,14 @@ public class TwitterHome extends JFrame {
             updateIcons("Home");
             updateFollowLabel("Follow"); // Update Follow label for Home
             cardLayout.show(centerPanel, "Home");
+            buttonAction action = new buttonAction("Following Post",UserInfo.getInstance().getUserId());
+            action.actionPerformed(null);
 
-            // Fetch and display posts
-            dbConnect db = new dbConnect("Following Post", UserInfo.getInstance().getUserId(), null, this);
-            db.getActionDb(); // Following Post 데이터 가져오기
+            // 스크롤을 맨 위로 이동
+            JScrollPane homeScrollPane = (JScrollPane) centerPanel.getComponent(0);
+            JViewport viewport = homeScrollPane.getViewport();
+            viewport.setViewPosition(new Point(0, 0));
+
         });
 
         bottomPanel.add(homeButton);
@@ -146,8 +151,16 @@ public class TwitterHome extends JFrame {
         bookmarkButton = createIconButton("icon/bookmarkIcon.png");
         bookmarkButton.addActionListener(e -> {
             updateIcons("Bookmark");
-            updateFollowLabel("Bookmarks"); // Update Follow label for Bookmark
+            updateFollowLabel("Bookmarks");
             cardLayout.show(centerPanel, "Bookmark");
+
+            buttonAction action = new buttonAction("Bookmark",UserInfo.getInstance().getUserId());
+            action.actionPerformed(null);
+
+            // 스크롤을 맨 위로 이동
+            JScrollPane homeScrollPane = (JScrollPane) centerPanel.getComponent(0);
+            JViewport viewport = homeScrollPane.getViewport();
+            viewport.setViewPosition(new Point(0, 0));
         });
         bottomPanel.add(bookmarkButton);
 
@@ -176,6 +189,30 @@ public class TwitterHome extends JFrame {
         postContainer.revalidate(); // UI 갱신
         postContainer.repaint();
     }
+
+    public void addOrUpdatePost(int postId, String userId, String content, Timestamp createAt) {
+        boolean postExists = false;
+
+        for (Post post : postList) {
+            if (post.getCreateAt().equals(createAt)) {
+                post.postUpdate(userId, content, createAt);
+                postExists = true;
+                break;
+            }
+        }
+
+        if (!postExists) {
+            Post newPost = new Post(userId, content, createAt);
+            postList.add(newPost);
+            postContainer.add(Box.createVerticalStrut(10));
+            postContainer.add(newPost);
+        }
+
+        postList.sort(Comparator.comparing(Post::getCreateAt).reversed());
+        postContainer.revalidate();
+        postContainer.repaint();
+    }
+
 
 
     public static JButton createIconButton(String iconPath) {

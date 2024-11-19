@@ -46,17 +46,21 @@ public class dbConnect {
                     UserInfo.getInstance().setUserId(this.Id);
                     String name = rs.getString("first_name")+" "+rs.getString("last_name");
                     System.out.println("user name : " + name);
-                    new TwitterHome();
+                    // TwitterHome 생성 후 홈 버튼 동작 호출
+                    SwingUtilities.invokeLater(() -> {
+                        TwitterHome home = TwitterHome.getInstance();
+                        home.homeButton.doClick(); // 홈 버튼 동작 실행
+                    });
                     parentFrame.dispose();
                 }else{
                     System.out.println("login failed");
                 }
             }
             else if (this.actionDb.equals("Following Post")) {
-                List<Post> postList = new ArrayList<>();
                 stmt = con.createStatement();
-                String followingPostQuery ="select p.id AS post_id, p.content, p.user_id, p.create_at from follow f join post p on f.followed_id = p.user_id WHERE f.follow_id = \""+UserInfo.getInstance().getUserId()+"\"";
+                String followingPostQuery = "SELECT p.id AS post_id, p.content, p.user_id, p.create_at FROM follow f JOIN post p ON f.followed_id = p.user_id WHERE f.follow_id = '" + UserInfo.getInstance().getUserId() + "'ORDER BY p.create_at DESC";
                 rs = stmt.executeQuery(followingPostQuery);
+
                 while (rs.next()) {
                     int postId = rs.getInt("post_id");
                     String content = rs.getString("content");
@@ -69,17 +73,36 @@ public class dbConnect {
                     System.out.println("Created At: " + createAt);
                     System.out.println("------------------------");
 
-                    postList.add(new Post(userId,content,createAt));
+                    SwingUtilities.invokeLater(() -> {
+                        TwitterHome home = TwitterHome.getInstance();
+                        home.addOrUpdatePost(postId, userId, content, createAt);
+                    });
                 }
+            }else if(this.actionDb.equals("Bookmark")) {
+                stmt = con.createStatement();
+                String bookmarkPostQuery = " \"SELECT p.id AS post_id, p.content, p.user_id, p.create_at from bookmark_group";
+                rs = stmt.executeQuery(bookmarkPostQuery);
 
-                // TwitterHome 인스턴스에 게시물 리스트 전달
-                SwingUtilities.invokeLater(() -> {
-                    TwitterHome home = TwitterHome.getInstance(); // TwitterHome 싱글톤 인스턴스
-                    for (Post post : postList) {
-                        home.addPostToHome(post);
-                    }
-                });
-            } else System.out.println("error");
+                while (rs.next()){
+                    int postId = rs.getInt("post_id");
+                    String content = rs.getString("content");
+                    String userId = rs.getString("user_id");
+                    Timestamp createAt = rs.getTimestamp("create_at");
+
+                    System.out.println("Post ID: " + postId);
+                    System.out.println("Content: " + content);
+                    System.out.println("Posted by: " + userId);
+                    System.out.println("Created At: " + createAt);
+                    System.out.println("------------------------");
+
+                    SwingUtilities.invokeLater(() -> {
+                        TwitterHome home = TwitterHome.getInstance();
+                        home.addOrUpdatePost(postId, userId, content, createAt);
+                    });
+                }
+            }
+
+            else System.out.println("error");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

@@ -11,10 +11,7 @@ public class BookmarkPage extends JPanel {
         bookmarkPage.setBackground(new Color(230, 245, 255));
 
         // Add dummy bookmark items
-        for (int i = 1; i <= 20; i++) {
-            bookmarkPage.add(Box.createVerticalStrut(10)); // Add spacing between posts
-           // bookmarkPage.add(new Post()); // Add post directly, using Post's size
-        }
+
 
         // Wrap the content panel in a scroll pane
         JScrollPane scrollPane = new JScrollPane(bookmarkPage);

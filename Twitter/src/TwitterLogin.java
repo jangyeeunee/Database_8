@@ -50,7 +50,7 @@ public class TwitterLogin extends JFrame {
         // Login button
         JButton loginButton = new JButton("Log in");
         loginButton.setBackground(new Color(29, 161, 242));
-        loginButton.setForeground(Color.WHITE);
+        loginButton.setForeground(Color.BLACK);
         loginButton.setFont(new Font("Arial", Font.BOLD, 14));
         loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         panel.add(loginButton);

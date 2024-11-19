@@ -3,53 +3,57 @@ import java.awt.*;
 import java.sql.Timestamp;
 
 public class Post extends JPanel {
-    private final String userId;
-    private final String content;
-    private final Timestamp createAt;
+    private String userId;
+    private String content;
+    private Timestamp createAt;
+
+    private JLabel userNameLabel;
+    private JLabel contentLabel;
+    private JLabel createAtLabel;
 
     public Post(String userId, String content, Timestamp createAt) {
         this.userId = userId;
         this.content = content;
         this.createAt = createAt;
 
-        int calculatedHeight = calculateHeight(content);
+        setupUI();
+    }
 
+    private void setupUI() {
         setLayout(new BorderLayout(0, 0));
         setBackground(Color.WHITE);
         setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        setPreferredSize(new Dimension(360, calculateHeight(content)));
 
-        setPreferredSize(new Dimension(360, calculatedHeight));
-        setMaximumSize(new Dimension(360, calculatedHeight));
-        setMinimumSize(new Dimension(360, calculatedHeight));
+        // User profile panel
+        JPanel userProfilePanel = new JPanel();
+        userProfilePanel.setPreferredSize(new Dimension(80, calculateHeight(content)));
+        userProfilePanel.setBackground(Color.WHITE);
+        userProfilePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
 
-        JPanel userProfile = new JPanel();
-        userProfile.setPreferredSize(new Dimension(80, calculatedHeight));
-        userProfile.setBackground(Color.WHITE);
-        userProfile.setLayout(new FlowLayout(FlowLayout.CENTER));
+        // Profile image
+        JLabel profileImg = new JLabel(new ImageIcon(new ImageIcon("icon/profile.jpg")
+                .getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
+        userProfilePanel.add(profileImg);
 
-        ImageIcon originalIcon = new ImageIcon("icon/profile.jpg");
-        Image scaledImage = originalIcon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
-        ImageIcon scaledIcon = new ImageIcon(scaledImage);
+        // Content panel
+        JPanel contentPanel = new JPanel();
+        contentPanel.setBackground(Color.WHITE);
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
-        JLabel profileImg = new JLabel(scaledIcon);
-        userProfile.add(profileImg);
+        userNameLabel = new JLabel(userId);
+        contentLabel = new JLabel("<html>" + content.replaceAll("\n", "<br>") + "</html>");
+        createAtLabel = new JLabel(createAt.toString());
 
-        JPanel userContent = new JPanel();
-        userContent.setBackground(Color.WHITE);
-        userContent.setLayout(new BoxLayout(userContent, BoxLayout.Y_AXIS));
+        contentPanel.add(userNameLabel);
+        contentPanel.add(contentLabel);
+        contentPanel.add(createAtLabel);
 
-        JLabel userName = new JLabel(userId);
-        JLabel userPost = new JLabel("<html>" + content.replaceAll("\n", "<br>") + "</html>");
-        userContent.add(userName);
-        userContent.add(userPost);
-
-        add(userProfile, BorderLayout.WEST);
-        add(userContent, BorderLayout.CENTER);
-
-        JPanel downDoc = new JPanel();
-        downDoc.setPreferredSize(new Dimension(400, 40));
-        downDoc.setBackground(Color.WHITE);
-        downDoc.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 5));
+        // Bottom panel
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setPreferredSize(new Dimension(360, 40));
+        bottomPanel.setBackground(Color.WHITE);
+        bottomPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
 
         JButton likeButton = createIconButton("icon/likeIcon.png");
         final boolean[] isLiked = {false};
@@ -64,7 +68,6 @@ public class Post extends JPanel {
             }
             isLiked[0] = !isLiked[0];
         });
-
         JButton repostButton = createIconButton("icon/retweetIcon.png");
         JButton commentButton = createIconButton("icon/commentIcon.png");
 
@@ -82,47 +85,54 @@ public class Post extends JPanel {
             isBookmarked[0] = !isBookmarked[0];
         });
 
-        downDoc.add(likeButton);
-        downDoc.add(repostButton);
-        downDoc.add(commentButton);
-        downDoc.add(bookmarkButton);
+        bottomPanel.add(likeButton);
+        bottomPanel.add(repostButton);
+        bottomPanel.add(commentButton);
+        bottomPanel.add(bookmarkButton);
 
-        add(downDoc, BorderLayout.SOUTH);
+        add(userProfilePanel, BorderLayout.WEST);
+        add(contentPanel, BorderLayout.CENTER);
+        add(bottomPanel, BorderLayout.SOUTH);
     }
 
-    // Getter for createAt
-    public Timestamp getCreateAt() {
-        return createAt;
+    public void postUpdate(String userId, String content, Timestamp createAt) {
+        this.userId = userId;
+        this.content = content;
+        this.createAt = createAt;
+
+        // Update UI components
+        userNameLabel.setText(userId);
+        contentLabel.setText("<html>" + content.replaceAll("\n", "<br>") + "</html>");
+        createAtLabel.setText(createAt.toString());
+
+        // Repaint and revalidate to ensure the UI updates
+        repaint();
+        revalidate();
+    }
+
+    private JButton createIconButton(String iconPath) {
+        ImageIcon icon = new ImageIcon(new ImageIcon(iconPath).getImage().getScaledInstance(25, 20, Image.SCALE_SMOOTH));
+        JButton button = new JButton(icon);
+        button.setBorderPainted(false);
+        button.setFocusPainted(false);
+        button.setContentAreaFilled(false);
+        button.setPreferredSize(new Dimension(40, 40));
+        return button;
     }
 
     private int calculateHeight(String content) {
         int baseHeight = 80;
         int charsPerLine = 50;
         int lineHeight = 20;
-
         int contentLines = (int) Math.ceil((double) content.length() / charsPerLine);
         return baseHeight + (contentLines * lineHeight);
     }
 
-    private JButton createIconButton(String iconPath) {
-        JButton button;
-
-        try {
-            ImageIcon icon = new ImageIcon(iconPath);
-            Image scaledImage = icon.getImage().getScaledInstance(25, 20, Image.SCALE_SMOOTH);
-            ImageIcon scaledIcon = new ImageIcon(scaledImage);
-
-            button = new JButton(scaledIcon);
-        } catch (Exception e) {
-            button = new JButton();
-            System.out.println("Icon not found: " + iconPath);
-        }
-
-        button.setPreferredSize(new Dimension(40, 40));
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setContentAreaFilled(false);
-
-        return button;
+    public Timestamp getCreateAt() {
+        return createAt;
     }
 }
+
+
+
+
