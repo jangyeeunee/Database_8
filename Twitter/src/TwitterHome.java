@@ -33,7 +33,6 @@ public class TwitterHome extends JFrame {
 
         // Main Panel
         JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(new Color(230, 245, 255));
 
         // Top Panel (Fixed)
         JPanel topPanel = createTopPanel();
@@ -51,7 +50,6 @@ public class TwitterHome extends JFrame {
         homeScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
         centerPanel.add(homeScrollPane, "Home");
-        centerPanel.add(new BookmarkPage(this), "Bookmark");
 
         mainPanel.add(centerPanel, BorderLayout.CENTER);
 
@@ -174,6 +172,7 @@ public class TwitterHome extends JFrame {
         return bottomPanel;
     }
 
+
     public void addOrUpdatePost(int postId, String userId, String content, Timestamp createAt) {
         boolean postExists = false;
 
@@ -239,7 +238,4 @@ public class TwitterHome extends JFrame {
         followLabel.setText(text); // Update the Follow label dynamically
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(TwitterHome::new);
-    }
 }

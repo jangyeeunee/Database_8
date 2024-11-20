@@ -41,9 +41,19 @@ public class Post extends JPanel {
         contentPanel.setBackground(Color.WHITE);
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
+        JLabel spaceLabel = new JLabel("");
+        contentPanel.add(spaceLabel);
+        spaceLabel.setFont(new Font("Arial",Font.BOLD,20));
         userNameLabel = new JLabel(userId);
+        userNameLabel.setForeground(Color.BLACK);
+        userNameLabel.setFont(new Font("Arial",Font.BOLD,15));
         contentLabel = new JLabel("<html>" + content.replaceAll("\n", "<br>") + "</html>");
+        contentLabel.setForeground(Color.BLACK);
+        contentLabel.setFont(new Font("맑은 고딕",Font.PLAIN,15));
         createAtLabel = new JLabel(createAt.toString());
+        createAtLabel.setFont(new Font("Arial", Font.BOLD,11));
+        createAtLabel.setForeground(Color.darkGray);
+
 
         contentPanel.add(userNameLabel);
         contentPanel.add(contentLabel);
@@ -70,7 +80,6 @@ public class Post extends JPanel {
         });
         JButton repostButton = createIconButton("icon/retweetIcon.png");
         JButton commentButton = createIconButton("icon/commentIcon.png");
-
         JButton bookmarkButton = createIconButton("icon/bookmark.png");
         final boolean[] isBookmarked = {false};
 

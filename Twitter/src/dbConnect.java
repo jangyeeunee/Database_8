@@ -29,7 +29,7 @@ public class dbConnect {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             String url = "jdbc:mysql://localhost:3306/TWITTER";
-            String user = "root", passwd = "tndk1008";
+            String user = "root", passwd = "wldmsdl7715";
             con = DriverManager.getConnection(url, user, passwd);
             System.out.println(con);
         } catch (SQLException | ClassNotFoundException e) {
@@ -58,10 +58,7 @@ public class dbConnect {
             }
             else if (this.actionDb.equals("Following Post")) {
                 stmt = con.createStatement();
-                String followingPostQuery = "SELECT p.id AS post_id, p.content, p.user_id, p.create_at " +
-                        "FROM follow f JOIN post p ON f.followed_id = p.user_id WHERE f.follow_id = '"
-                        + UserInfo.getInstance().getUserId() +
-                        "'ORDER BY p.create_at DESC";
+                String followingPostQuery = "SELECT p.id AS post_id, p.content, p.user_id, p.create_at FROM follow f JOIN post p ON f.followed_id = p.user_id WHERE f.follow_id = '" + UserInfo.getInstance().getUserId() + "'ORDER BY p.create_at DESC";
                 rs = stmt.executeQuery(followingPostQuery);
 
                 while (rs.next()) {
@@ -83,7 +80,7 @@ public class dbConnect {
                 }
             }else if(this.actionDb.equals("Bookmark")) {
                 stmt = con.createStatement();
-                String bookmarkPostQuery = "SELECT p.id AS post_id, p.content, p.user_id, p.create_at from bookmark_group";
+                String bookmarkPostQuery = " SELECT FROM post AS p JOIN bookmark_group AS bg ON p.id = bg.post_id; ";
                 rs = stmt.executeQuery(bookmarkPostQuery);
 
                 while (rs.next()){
@@ -99,8 +96,8 @@ public class dbConnect {
                     System.out.println("------------------------");
 
                     SwingUtilities.invokeLater(() -> {
-                        TwitterHome home = TwitterHome.getInstance();
-                        home.addOrUpdatePost(postId, userId, content, createAt);
+                        BookmarkPage bookmarkPage = BookmarkPage.getInstance();
+                        bookmarkPage.addOrUpdatePost(postId, userId, content, createAt);
                     });
                 }
             }
