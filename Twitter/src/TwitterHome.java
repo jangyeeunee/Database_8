@@ -33,7 +33,6 @@ public class TwitterHome extends JFrame {
 
         // Main Panel
         JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(new Color(230, 245, 255));
 
         // Top Panel (Fixed)
         JPanel topPanel = createTopPanel();
@@ -51,7 +50,6 @@ public class TwitterHome extends JFrame {
         homeScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
         centerPanel.add(homeScrollPane, "Home");
-        centerPanel.add(new BookmarkPage(this), "Bookmark");
 
         mainPanel.add(centerPanel, BorderLayout.CENTER);
 
@@ -175,21 +173,6 @@ public class TwitterHome extends JFrame {
     }
 
 
-    public void addPostToHome(Post post) {
-        postList.add(post); // Post 리스트에 추가
-        postList.sort(Comparator.comparing(Post::getCreateAt).reversed()); // 최신순으로 정렬
-
-        postContainer.removeAll(); // 기존 UI 초기화
-
-        for (Post sortedPost : postList) {
-            postContainer.add(Box.createVerticalStrut(10)); // Add spacing
-            postContainer.add(sortedPost); // 정렬된 Post 추가
-        }
-
-        postContainer.revalidate(); // UI 갱신
-        postContainer.repaint();
-    }
-
     public void addOrUpdatePost(int postId, String userId, String content, Timestamp createAt) {
         boolean postExists = false;
 
@@ -255,7 +238,4 @@ public class TwitterHome extends JFrame {
         followLabel.setText(text); // Update the Follow label dynamically
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(TwitterHome::new);
-    }
 }

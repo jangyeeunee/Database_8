@@ -80,7 +80,7 @@ public class dbConnect {
                 }
             }else if(this.actionDb.equals("Bookmark")) {
                 stmt = con.createStatement();
-                String bookmarkPostQuery = " \"SELECT p.id AS post_id, p.content, p.user_id, p.create_at from bookmark_group";
+                String bookmarkPostQuery = " SELECT FROM post AS p JOIN bookmark_group AS bg ON p.id = bg.post_id; ";
                 rs = stmt.executeQuery(bookmarkPostQuery);
 
                 while (rs.next()){
@@ -96,8 +96,8 @@ public class dbConnect {
                     System.out.println("------------------------");
 
                     SwingUtilities.invokeLater(() -> {
-                        TwitterHome home = TwitterHome.getInstance();
-                        home.addOrUpdatePost(postId, userId, content, createAt);
+                        BookmarkPage bookmarkPage = BookmarkPage.getInstance();
+                        bookmarkPage.addOrUpdatePost(postId, userId, content, createAt);
                     });
                 }
             }
