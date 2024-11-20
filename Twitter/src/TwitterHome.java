@@ -174,22 +174,6 @@ public class TwitterHome extends JFrame {
         return bottomPanel;
     }
 
-
-    public void addPostToHome(Post post) {
-        postList.add(post); // Post 리스트에 추가
-        postList.sort(Comparator.comparing(Post::getCreateAt).reversed()); // 최신순으로 정렬
-
-        postContainer.removeAll(); // 기존 UI 초기화
-
-        for (Post sortedPost : postList) {
-            postContainer.add(Box.createVerticalStrut(10)); // Add spacing
-            postContainer.add(sortedPost); // 정렬된 Post 추가
-        }
-
-        postContainer.revalidate(); // UI 갱신
-        postContainer.repaint();
-    }
-
     public void addOrUpdatePost(int postId, String userId, String content, Timestamp createAt) {
         boolean postExists = false;
 
