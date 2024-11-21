@@ -2,6 +2,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.text.ParseException;
 
 public class TwitterLogin extends JFrame {
     public TwitterLogin() {
@@ -57,20 +60,14 @@ public class TwitterLogin extends JFrame {
 
         panel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // Forgot password and sign-up links
+        //sign-up links
         JPanel linkPanel = new JPanel();
         linkPanel.setBackground(Color.WHITE);
         linkPanel.setLayout(new FlowLayout());
 
-        JLabel forgotPassword = new JLabel("Forgot password?");
-        forgotPassword.setForeground(new Color(29, 161, 242));
-        linkPanel.add(forgotPassword);
-
-        JLabel separator = new JLabel(" • ");
-        linkPanel.add(separator);
-
         JLabel signUp = new JLabel("Sign up for Twitter");
         signUp.setForeground(new Color(29, 161, 242));
+        signUp.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         linkPanel.add(signUp);
 
         panel.add(linkPanel);
@@ -79,14 +76,26 @@ public class TwitterLogin extends JFrame {
         loginButton.addActionListener(e -> {
             String id = usernameField.getText();
             String password = new String(passwordField.getPassword());
-            buttonAction action = new buttonAction("login", id, password, this);
-            action.actionPerformed(null);
+            dbConnect db = dbConnect.getInstance();
+            db.loginDB( id, password, this);
         });
 
+        //Add action listener for sign-up links >> 수정할 필요가 있음.
+        signUp.addMouseListener(new MouseAdapter() {
+                                    @Override
+                                    public void mouseClicked(MouseEvent e) {
+                                        // 새 창 열기
+                                        try {
+                                            new twitterSignUp();
+                                        } catch (ParseException e1) {
+                                        }
+                                        dispose(); // 현재 창 닫기
+                                    }
+                                }
+        );
 
         // Add the main panel to the frame
         add(panel);
         setVisible(true);
     }
-
 }
