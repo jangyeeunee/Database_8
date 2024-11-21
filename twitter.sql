@@ -11,7 +11,7 @@ CREATE TABLE USER
     last_name    VARCHAR(15),
     email        VARCHAR(40) NOT NULL,
     gender       VARCHAR(10),
-    phone_number VARCHAR(11),
+    phone_number VARCHAR(13),
     birth        DATE
 );
 
