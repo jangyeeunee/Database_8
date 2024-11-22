@@ -1,10 +1,6 @@
 import javax.swing.*;
-import java.sql.Statement;
 import java.sql.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class dbConnect {
     private static dbConnect dbConnecter;
@@ -36,11 +32,11 @@ public class dbConnect {
                 System.out.println("login success");
                 user.setUserInfo(rs);
                 flag = true;
-                // TwitterHome 생성 후 홈 버튼 동작 호출
-//                    SwingUtilities.invokeLater(() -> {
-//                        TwitterHome home = TwitterHome.getInstance();
-//                        home.homeButton.doClick(); // 홈 버튼 동작 실행
-//                    }
+             // TwitterHome 생성 후 홈 버튼 동작 호출
+                SwingUtilities.invokeLater(() -> {
+                    BottomPanel button = BottomPanel.getInstance();
+                    button.homeButton.doClick(); // 홈 버튼 동작 실행
+                });
             }
             if (flag) {
                 System.out.println(user.getUserId());
@@ -61,7 +57,7 @@ public class dbConnect {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             String url = "jdbc:mysql://localhost:3306/TWITTER";
-            String user = "root", passwd = "tndk1008";
+            String user = "root", passwd = "wldmsdl7715";
             con = DriverManager.getConnection(url, user, passwd);
             System.out.println(con);
         } catch (SQLException | ClassNotFoundException e) {
@@ -102,52 +98,87 @@ public class dbConnect {
         return false;
     }
 
-    public Post[] getFollowingPost(){
-        Statement stmt = null;
+    public Post[] getFollowingPost() {
         ResultSet rs = null;
+        System.out.println("getFollowingPosts");
 
         try {
-            String followingPostQuery = "SELECT * FROM post AS p " +
+            String followingPostQuery = "SELECT p.id AS post_id, p.content, p.user_id, p.create_at, p.repost_id " +
+                    "FROM post AS p " +
                     "JOIN (SELECT followed_id AS following FROM FOLLOW WHERE follow_id = ?) AS f " +
-                    "WHERE p.user_id = f.following " +
+                    "ON p.user_id = f.following " +
                     "ORDER BY p.create_at DESC";
 
             PreparedStatement pstmt = con.prepareStatement(followingPostQuery);
             pstmt.setString(1, UserInfo.getInstance().getUserId());
             rs = pstmt.executeQuery();
 
-            ResultSetMetaData metaData = rs.getMetaData();
-            int columnCount = metaData.getColumnCount();
-
-            //return 할 post 객체
-            Post[] postData = new Post[columnCount];
+            List<Post> postList = new ArrayList<>();
 
             while (rs.next()) {
-                for(int i = 1; i <= columnCount; i++) {
-                    int postId = rs.getInt("post_id");
-                    String content = rs.getString("content");
-                    String userId = rs.getString("user_id");
-                    Timestamp createAt = rs.getTimestamp("create_at");
-                    int repost_id = rs.getInt("repost_id");
+                int postId = rs.getInt("post_id");
+                String content = rs.getString("content");
+                String userId = rs.getString("user_id");
+                Timestamp createAt = rs.getTimestamp("create_at");
+                int repostId = rs.getInt("repost_id");
 
-                    postData[i-1] = new Post(postId,userId,content,repost_id,createAt);
+                postList.add(new Post(postId, userId, content, repostId, createAt));
 
-                    System.out.println("Post ID: " + postId);
-                    System.out.println("Content: " + content);
-                    System.out.println("Posted by: " + userId);
-                    System.out.println("Created At: " + createAt);
-                    System.out.println("------------------------");
-                }
-
-//                SwingUtilities.invokeLater(() -> {
-//                    TwitterHome home = TwitterHome.getInstance();
-//                    home.addOrUpdatePost(postId, userId, content, createAt);
-//                })
+                System.out.println("Post ID: " + postId);
+                System.out.println("Content: " + content);
+                System.out.println("Posted by: " + userId);
+                System.out.println("Created At: " + createAt);
+                System.out.println("------------------------");
             }
-            return postData;
-        }catch (SQLException e) {
-            throw new RuntimeException(e);
+
+            return postList.toArray(new Post[0]);
+
+        } catch (SQLException e) {
+            System.out.println("SQL Exception: " + e.getMessage());
+            e.printStackTrace();
+            return new Post[0];
         }
     }
+
+    public Post[]getBookmarkPost() {
+        ResultSet rs = null;
+        System.out.println("getBookmarkPosts");
+
+        try {
+            String followingPostQuery = " SELECT DISTINCT p.id AS post_id, p.content, p.user_id, p.create_at, p.repost_id FROM post AS p JOIN bookmark_group AS bg ON p.id = bg.post_id WHERE bg.user_id = ?";
+
+
+            PreparedStatement pstmt = con.prepareStatement(followingPostQuery);
+            pstmt.setString(1, UserInfo.getInstance().getUserId());
+            rs = pstmt.executeQuery();
+
+            List<Post> postList = new ArrayList<>();
+
+            while (rs.next()) {
+                int postId = rs.getInt("post_id");
+                String content = rs.getString("content");
+                String userId = rs.getString("user_id");
+                Timestamp createAt = rs.getTimestamp("create_at");
+                int repostId = rs.getInt("repost_id");
+
+                postList.add(new Post(postId, userId, content, repostId, createAt));
+
+                System.out.println("Post ID: " + postId);
+                System.out.println("Content: " + content);
+                System.out.println("Posted by: " + userId);
+                System.out.println("Created At: " + createAt);
+                System.out.println("------------------------");
+            }
+
+            return postList.toArray(new Post[0]);
+
+        } catch (SQLException e) {
+            System.out.println("SQL Exception: " + e.getMessage());
+            e.printStackTrace();
+            return new Post[0];
+        }
+    }
+
+
 
 }

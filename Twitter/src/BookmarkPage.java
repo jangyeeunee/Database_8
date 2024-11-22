@@ -1,43 +1,29 @@
 import javax.swing.*;
 import java.awt.*;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 public class BookmarkPage extends JPanel {
     private static BookmarkPage instance;
-    private List<Post> postList;
-    private Container postContainer;
-
-    private CardLayout cardLayout;
-    private JPanel centerPanel;
+    private final JPanel postContainer;
 
     public BookmarkPage() {
         instance = this;
 
-        postList = new ArrayList<>();
+        setLayout(new BorderLayout());
 
-        // Main Panel
-        JPanel mainPanel = new JPanel(new BorderLayout());
+        // Top Panel
+        JPanel topPanel = TopPanel.getInstance().topPanel("Bookmark");
+        add(topPanel, BorderLayout.NORTH);
 
-        // Center Panel with CardLayout
-        cardLayout = new CardLayout();
-        centerPanel = new JPanel(cardLayout);
-
-        // Create Post Container for Home Page
+        // Post Container
         postContainer = new JPanel();
         postContainer.setLayout(new BoxLayout(postContainer, BoxLayout.Y_AXIS));
-        JScrollPane bookmarkScrollPane = new JScrollPane(postContainer);
-        bookmarkScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        bookmarkScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        JScrollPane scrollPane = new JScrollPane(postContainer);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
-        centerPanel.add(bookmarkScrollPane, "Bookmark");
+        add(scrollPane, BorderLayout.CENTER);
 
-        mainPanel.add(centerPanel, BorderLayout.CENTER);
-
-        add(mainPanel);
-        setVisible(true);
+        displayPosts();
     }
 
     public static BookmarkPage getInstance() {
@@ -47,28 +33,28 @@ public class BookmarkPage extends JPanel {
         return instance;
     }
 
-    public void addOrUpdatePost(int postId, String userId, String content, Timestamp createAt) {
-        boolean postExists = false;
+    private void displayPosts() {
+        dbConnect db = dbConnect.getInstance();
+        Post[] posts = db.getBookmarkPost();
 
-        for (Post post : postList) {
-            if (post.getCreateAt().equals(createAt)) {
-                post.postUpdate(userId, content, createAt);
-                postExists = true;
-                break;
+        postContainer.removeAll(); // 기존 게시물 제거
+
+        if (posts == null || posts.length == 0) {
+            JLabel noPostsLabel = new JLabel("No bookmarked posts found.");
+            noPostsLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+            noPostsLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            postContainer.add(noPostsLabel);
+        } else {
+            for (Post post : posts) {
+                if (post != null) {
+                    // Post 객체를 postContainer에 추가
+                    postContainer.add(post);
+                }
             }
         }
 
-//        if (!postExists) {
-//            Post newPost = new Post(userId, content, createAt);
-//            postList.add(newPost);
-//            postContainer.add(Box.createVerticalStrut(10));
-//            postContainer.add(newPost);
-//        }
-
-        postList.sort(Comparator.comparing(Post::getCreateAt).reversed());
         postContainer.revalidate();
         postContainer.repaint();
     }
-
 
 }

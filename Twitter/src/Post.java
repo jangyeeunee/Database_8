@@ -19,6 +19,8 @@ public class Post extends JPanel {
         this.createAt = createAt;
         this.id = id;
         this.repost_id = repost_id;
+
+        setupUI();
     }
 
     private void setupUI() {
@@ -143,7 +145,3 @@ public class Post extends JPanel {
         return createAt;
     }
 }
-
-
-
-
