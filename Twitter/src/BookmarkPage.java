@@ -58,12 +58,12 @@ public class BookmarkPage extends JPanel {
             }
         }
 
-        if (!postExists) {
-            Post newPost = new Post(userId, content, createAt);
-            postList.add(newPost);
-            postContainer.add(Box.createVerticalStrut(10));
-            postContainer.add(newPost);
-        }
+//        if (!postExists) {
+//            Post newPost = new Post(userId, content, createAt);
+//            postList.add(newPost);
+//            postContainer.add(Box.createVerticalStrut(10));
+//            postContainer.add(newPost);
+//        }
 
         postList.sort(Comparator.comparing(Post::getCreateAt).reversed());
         postContainer.revalidate();

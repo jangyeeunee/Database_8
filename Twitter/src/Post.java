@@ -5,18 +5,20 @@ import java.sql.Timestamp;
 public class Post extends JPanel {
     private String userId;
     private String content;
+    private int id;
+    private int repost_id;
     private Timestamp createAt;
 
     private JLabel userNameLabel;
     private JLabel contentLabel;
     private JLabel createAtLabel;
 
-    public Post(String userId, String content, Timestamp createAt) {
+    public Post(int id, String userId, String content, int repost_id,Timestamp createAt) {
         this.userId = userId;
         this.content = content;
         this.createAt = createAt;
-
-        setupUI();
+        this.id = id;
+        this.repost_id = repost_id;
     }
 
     private void setupUI() {
