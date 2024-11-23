@@ -24,14 +24,14 @@ public class UserInfo {
     public void setUserInfo(ResultSet rs) {
         try {
             this.userId = rs.getString("id");
+            this.userPassword = rs.getString("pwd");
             this.userFirstName = rs.getString("first_Name");
             this.userLastName = rs.getString("last_name");
             this.userEmail = rs.getString("email");
-            this.userPassword = rs.getString("pwd");
             this.userPhone = rs.getString("phone_number");
-            this.userAddress = rs.getString("address");
             this.userBirth = rs.getString("birth");
             this.userGender = rs.getString("gender");
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
