@@ -179,6 +179,34 @@ public class dbConnect {
         }
     }
 
+    public boolean addComment(int postId, String comment) {
+        String query = "INSERT INTO COMMENT (post_id, comment) VALUES (?, ?)";
+        try (PreparedStatement stmt = con.prepareStatement(query)) {
+            stmt.setInt(1, postId);
+            stmt.setString(2, comment);
+            stmt.executeUpdate();
+            return true; // Success
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false; // Failure
+        }
+    }
+
+    public List<String> getCommentsByPostId(int postId) {
+        String query = "SELECT comment FROM COMMENT WHERE post_id = ?";
+        List<String> comments = new ArrayList<>();
+        try (PreparedStatement stmt = con.prepareStatement(query)) {
+            stmt.setInt(1, postId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    comments.add(rs.getString("comment"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return comments; // Return the list of comments
+    }
 
 
 }
