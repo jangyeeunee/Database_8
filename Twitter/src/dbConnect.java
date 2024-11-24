@@ -24,7 +24,7 @@ public class dbConnect {
         UserInfo user = UserInfo.getInstance();
         boolean flag = false;
 
-        try {
+    try {
             stmt = con.createStatement();
             String s1 = "select * from user where id = \"" + Id + "\" and pwd = \"" + Password + "\"";
             rs = stmt.executeQuery(s1);
@@ -57,7 +57,7 @@ public class dbConnect {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             String url = "jdbc:mysql://localhost:3306/TWITTER";
-            String user = "root", passwd = "wldmsdl7715";
+            String user = "root", passwd = "yuyu1234";
             con = DriverManager.getConnection(url, user, passwd);
             System.out.println(con);
         } catch (SQLException | ClassNotFoundException e) {
@@ -207,6 +207,110 @@ public class dbConnect {
         }
         return comments; // Return the list of comments
     }
+    
 
+    public List<String> getUserPosts(String userId) {
+        List<String> posts = new ArrayList<>();
+        ResultSet rs = null;
+        
+        try {
+            String query = "SELECT content FROM post WHERE user_id = ? ORDER BY create_at DESC";
+            PreparedStatement pstmt = con.prepareStatement(query);
+            pstmt.setString(1, userId);
+            rs = pstmt.executeQuery();
 
+            while (rs.next()) {
+                String content = rs.getString("content");
+                posts.add(content);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return posts;
+    }
+    public List<PostDetails> getUserPostsWithDetails(String userId) {
+        List<PostDetails> postDetailsList = new ArrayList<>();
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            String query = "SELECT p.content, p.create_at, u.first_name, u.last_name, " +
+                           "(SELECT COUNT(*) FROM comment c WHERE c.post_id = p.id) AS comment_count, " +
+                           "(SELECT COUNT(*) FROM post_like pl WHERE pl.post_id = p.id) AS like_count " +
+                           "FROM post p " +
+                           "JOIN user u ON p.user_id = u.id " +
+                           "WHERE p.user_id = ? " +
+                           "ORDER BY p.create_at DESC"; // Order by post creation date
+
+            stmt = con.prepareStatement(query);
+            stmt.setString(1, userId);
+            rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String content = rs.getString("content");
+                String creationDate = rs.getString("create_at");
+                String username = rs.getString("first_name") + " " + rs.getString("last_name"); // Display full name
+                int commentCount = rs.getInt("comment_count");
+                int likeCount = rs.getInt("like_count");
+
+                postDetailsList.add(new PostDetails(content, creationDate, username, commentCount, likeCount));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return postDetailsList;
+    }
+public List<PostDetails> getUserLikedPosts(String userId) {
+    List<PostDetails> postDetailsList = new ArrayList<>();
+    PreparedStatement stmt = null;
+    ResultSet rs = null;
+
+    try {
+
+        String query = "SELECT p.content, p.create_at, u.first_name, u.last_name, " +
+                       "(SELECT COUNT(*) FROM comment c WHERE c.post_id = p.id) AS comment_count, " +
+                       "(SELECT COUNT(*) FROM post_like pl WHERE pl.post_id = p.id) AS like_count " +
+                       "FROM post p " +
+                       "JOIN user u ON p.user_id = u.id " +
+                       "JOIN post_like pl ON p.id = pl.post_id " +
+                       "WHERE pl.user_id = ? " +
+                       "ORDER BY p.create_at DESC"; // Order by post creation date
+
+        stmt = con.prepareStatement(query);
+        stmt.setString(1, userId);
+        rs = stmt.executeQuery();
+
+        while (rs.next()) {
+            String content = rs.getString("content");
+            String creationDate = rs.getString("create_at");
+            String username = rs.getString("first_name") + " " + rs.getString("last_name");
+            int commentCount = rs.getInt("comment_count");
+            int likeCount = rs.getInt("like_count");
+
+            postDetailsList.add(new PostDetails(content, creationDate, username, commentCount, likeCount));
+        }
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    } finally {
+        try {
+            if (rs != null) rs.close();
+            if (stmt != null) stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    return postDetailsList;
+}
 }
