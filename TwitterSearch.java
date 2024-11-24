@@ -16,8 +16,6 @@ public class TwitterSearch extends JFrame {
     private JButton searchButton;
     private JButton userButton;
     private JButton addPostButton;
-    
-    
 
     public TwitterSearch() {
         setTitle("Twitter Search");
@@ -80,7 +78,6 @@ public class TwitterSearch extends JFrame {
                     searchField.setText("");
                     searchField.setForeground(Color.BLACK);
                 }
-                
             }
 
             @Override
@@ -89,11 +86,9 @@ public class TwitterSearch extends JFrame {
                     searchField.setText("Search");
                     searchField.setForeground(Color.GRAY);
                 }
-              
             }
         });
 
-        // Searching by enterkey
         searchField.addActionListener(e -> performSearch(searchField.getText().trim()));
 
         searchPanel.add(iconLabel, BorderLayout.WEST);
@@ -110,7 +105,7 @@ public class TwitterSearch extends JFrame {
         headerPanel.setBackground(new Color(240, 248, 255));
         JLabel welcomeLabel = new JLabel("Follow");
         welcomeLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        welcomeLabel.setForeground(new Color(29, 161, 242)); 
+        welcomeLabel.setForeground(new Color(29, 161, 242));
         headerPanel.add(welcomeLabel);
 
         homePanel.add(headerPanel, BorderLayout.NORTH);
@@ -192,7 +187,7 @@ public class TwitterSearch extends JFrame {
         button.setContentAreaFilled(false);
         return button;
     }
-
+    
 
     private void performSearch(String query) {
         if (query.isEmpty() || query.equals("Search")) {
@@ -206,94 +201,75 @@ public class TwitterSearch extends JFrame {
             return;
         }
 
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/twitter", "root", "5268")) {
-            resultPanel.removeAll(); // Clear previous results
+        dbConnect db = dbConnect.getInstance();
+
+        try {
+            resultPanel.removeAll();
 
             if (query.startsWith("#")) {
                 // Hashtag search
-                try (PreparedStatement stmt = conn.prepareStatement(
-                        "SELECT user_id, content FROM post WHERE content LIKE ?")) {
-                    stmt.setString(1, "%" + query + "%");
-                    ResultSet rs = stmt.executeQuery();
+                ResultSet rs = db.getPostsByHashtag(query);
+                while (rs.next()) {
+                    String userId = rs.getString("user_id");
+                    String content = rs.getString("content");
 
-                    // If results exist
-                    if (rs.isBeforeFirst()) {
-                      
-                        JLabel resultTitle = new JLabel("Search Results: " + query);
-                        resultTitle.setFont(new Font("Arial", Font.BOLD, 14));
-                        resultTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
-                        resultPanel.add(resultTitle);
-                        resultPanel.add(Box.createVerticalStrut(10)); // 간격 추가
+                    JPanel postPanel = new JPanel(new BorderLayout());
+                    postPanel.setBackground(Color.WHITE);
+                    postPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+                    postPanel.setMaximumSize(new Dimension(600, 80));
 
-                        // 검색 결과 순회
-                        while (rs.next()) {
-                            String userId = rs.getString("user_id");
-                            String content = rs.getString("content");
+                    JLabel userLabel = new JLabel("User: " + userId);
+                    userLabel.setFont(new Font("Arial", Font.BOLD, 12));
+                    userLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
-                            JPanel postPanel = new JPanel(new BorderLayout());
-                            postPanel.setBackground(Color.WHITE); 
-                            postPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1)); 
-                            postPanel.setMaximumSize(new Dimension(600, 80)); 
+                    JLabel contentLabel = new JLabel("<html>" + content + "</html>");
+                    contentLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+                    contentLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
-                            JLabel userLabel = new JLabel("User: " + userId);
-                            userLabel.setFont(new Font("Arial", Font.BOLD, 12));
-                            userLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10)); 
+                    postPanel.add(userLabel, BorderLayout.NORTH);
+                    postPanel.add(contentLabel, BorderLayout.CENTER);
 
-                            JLabel contentLabel = new JLabel("<html>" + content + "</html>"); 
-                            contentLabel.setFont(new Font("Arial", Font.PLAIN, 12));
-                            contentLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-
-                            postPanel.add(userLabel, BorderLayout.NORTH);
-                            postPanel.add(contentLabel, BorderLayout.CENTER);
-
-                            resultPanel.add(postPanel);
-                            resultPanel.add(Box.createVerticalStrut(10));
-                        }
-                    } else {
-                        JLabel noResultsLabel = new JLabel("No posts found for this hashtag.");
-                        noResultsLabel.setFont(new Font("Arial", Font.ITALIC, 14));
-                        noResultsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-                        resultPanel.add(noResultsLabel);
-                    }
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
+                    resultPanel.add(postPanel);
+                    resultPanel.add(Box.createVerticalStrut(10));
                 }
             }
             else if (query.startsWith("@")) {
                 // User ID search
-                try (PreparedStatement stmt = conn.prepareStatement(
-                        "SELECT id FROM user WHERE id = ?")) {
-                    stmt.setString(1, query.substring(1)); // Remove "@" from query
-                    ResultSet rs = stmt.executeQuery();
+                ResultSet rs = db.getPostsByUser(query.substring(1)); // Remove "@" from query
+                if (rs.next()) {
+                    String userId = rs.getString("id");
 
-                    if (rs.next()) {
-                        String userId = rs.getString("id");
+                    JPanel userPanel = new JPanel(new BorderLayout());
+                    userPanel.setBackground(Color.WHITE);
+                    userPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+                    userPanel.setMaximumSize(new Dimension(400, 50));
 
-                        JPanel userPanel = new JPanel(new BorderLayout());
-                        userPanel.setBackground(Color.WHITE); 
-                        userPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1)); 
-                        userPanel.setMaximumSize(new Dimension(400, 50));
+                    JLabel userLabel = new JLabel("@" + userId);
+                    userLabel.setFont(new Font("Arial", Font.BOLD, 14));
+                    userLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // 여백 추가
 
-                        JLabel userLabel = new JLabel("@" + userId);
-                        userLabel.setFont(new Font("Arial", Font.BOLD, 14));
-                        userLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // 여백 추가
+                    JButton followButton = new JButton("Follow");
+                    followButton.setFont(new Font("Arial", Font.PLAIN, 12));
+                    followButton.setPreferredSize(new Dimension(80, 30)); // 버튼 크기 설정
+                    followButton.addActionListener(e -> {
+                        try {
+                            db.toggleFollow(userId);
+                            followButton.setText(db.isFollowing(userId) ? "Unfollow" : "Follow");
+                        } catch (SQLException ex) {
+                            ex.printStackTrace();
+                        }
+                    });
 
-                        JButton followButton = new JButton(isFollowing(conn, userId) ? "Unfollow" : "Follow");
-                        followButton.setFont(new Font("Arial", Font.PLAIN, 12));
-                        followButton.setPreferredSize(new Dimension(80, 30)); // 버튼 크기 설정
-                        followButton.addActionListener(e -> toggleFollow(conn, userId, followButton));
+                    userPanel.add(userLabel, BorderLayout.WEST); // 왼쪽 정렬
+                    userPanel.add(followButton, BorderLayout.EAST); // 오른쪽 정렬
 
-                        userPanel.add(userLabel, BorderLayout.WEST); // 왼쪽 정렬
-                        userPanel.add(followButton, BorderLayout.EAST); // 오른쪽 정렬
-
-                        resultPanel.add(userPanel);
-                        resultPanel.add(Box.createVerticalStrut(10)); 
-                    } else {
-                        JLabel noResultsLabel = new JLabel("User not found.");
-                        noResultsLabel.setFont(new Font("Arial", Font.ITALIC, 14));
-                        noResultsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-                        resultPanel.add(noResultsLabel);
-                    }
+                    resultPanel.add(userPanel);
+                    resultPanel.add(Box.createVerticalStrut(10));
+                } else {
+                    JLabel noResultsLabel = new JLabel("User not found.");
+                    noResultsLabel.setFont(new Font("Arial", Font.ITALIC, 14));
+                    noResultsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                    resultPanel.add(noResultsLabel);
                 }
             }
 
@@ -303,55 +279,36 @@ public class TwitterSearch extends JFrame {
             e.printStackTrace();
         }
     }
-  
-    private boolean isFollowing(Connection conn, String userId) { 
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "SELECT * FROM follow WHERE follow_id = ? AND followed_id = ?")) {
-            stmt.setString(1, UserInfo.getInstance().getUserId()); // 로그인 사용자 ID
-            stmt.setString(2, userId); // 검색된 사용자 ID
-            ResultSet rs = stmt.executeQuery();
-            return rs.next(); // 결과가 있으면 팔로우 상태
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
     private void toggleFollow(Connection conn, String userId, JButton followButton) {
+        dbConnect db = dbConnect.getInstance(); // dbConnect 객체를 가져옴
         try {
-            if (isFollowing(conn, userId)) {
+            if (db.isFollowing(userId)) {
                 // 이미 팔로우 중인 경우 -> 언팔로우
-                try (PreparedStatement stmt = conn.prepareStatement(
-                        "DELETE FROM follow WHERE follow_id = ? AND followed_id = ?")) {
-                    stmt.setString(1, UserInfo.getInstance().getUserId()); // 로그인 사용자 ID
-                    stmt.setString(2, userId); // 검색된 사용자 ID
-                    stmt.executeUpdate();
-                    followButton.setText("Follow");
-                    JOptionPane.showMessageDialog(followButton, "You have unfollowed this user.", "Notification", JOptionPane.INFORMATION_MESSAGE);
-                }
+                db.toggleFollow(userId);  // 팔로우 해제
+                followButton.setText("Follow");
+                JOptionPane.showMessageDialog(followButton, "You have unfollowed this user.", "Notification", JOptionPane.INFORMATION_MESSAGE);
             } else {
                 // 팔로우 중이 아닌 경우 -> 팔로우
-                try (PreparedStatement stmt = conn.prepareStatement(
-                        "INSERT INTO follow (follow_id, followed_id) VALUES (?, ?)")) {
-                    stmt.setString(1, UserInfo.getInstance().getUserId()); // 로그인 사용자 ID
-                    stmt.setString(2, userId); // 검색된 사용자 ID
-                    stmt.executeUpdate();
-                    followButton.setText("Unfollow");
-                    JOptionPane.showMessageDialog(followButton, "You are now following this user.", "Notification", JOptionPane.INFORMATION_MESSAGE);
-                }
+                db.toggleFollow(userId);  // 팔로우 추가
+                followButton.setText("Unfollow");
+                JOptionPane.showMessageDialog(followButton, "You are now following this user.", "Notification", JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        followButton.addActionListener(e -> {
+            try {
+                db.toggleFollow(userId);
+                followButton.setText(db.isFollowing(userId) ? "Unfollow" : "Follow");
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        });
+
     }
-
-
     private void updateBottomIcons(String activeTab) {
         homeButton.setIcon(new ImageIcon("icon/home" + (activeTab.equals("Home") ? "Active.png" : "Inactive.png")));
         searchButton.setIcon(new ImageIcon("icon/search" + (activeTab.equals("Search") ? "Active.png" : "Inactive.png")));
         bookmarkButton.setIcon(new ImageIcon("icon/bookmark" + (activeTab.equals("Bookmark") ? "Active.png" : "Inactive.png")));
     }
-
-
-    
 }
-
