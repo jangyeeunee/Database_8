@@ -4,19 +4,15 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
-public class createPost extends JFrame {
+public class createPost extends JPanel {
+    private static createPost createpost;
     private String userId;
     private String content;
     private int repost_id;
     private Timestamp createAt;
 
-    public createPost(){
-        Map<String,String> data = new HashMap<>();
-
-        setTitle("create post");
-        setSize(400, 300);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+    public createPost() {
+        Map<String, String> data = new HashMap<>();
 
         // Create the main panel
         JPanel panel = new JPanel();
@@ -53,14 +49,18 @@ public class createPost extends JFrame {
             data.put("content", content.getText());
             data.put("hashtag", hashtag.getText());
             dbConnect db = dbConnect.getInstance();
-            db.CreatePost(data,this);
+            db.CreatePost(data);
         });
 
         add(panel);
         setVisible(true);
     }
-    public Timestamp getCreateAt() {
-        return createAt;
+
+    public static createPost getInstance() {
+        if (createpost == null) {
+            createpost = new createPost();
+        }
+        return createpost;
     }
 
 }

@@ -211,7 +211,7 @@ public class dbConnect {
     }
 
 
-    public void CreatePost(Map<String, String> data, JFrame parentFrame) {
+    public void CreatePost(Map<String, String> data) {
 
         Statement stmt = null;
         ResultSet rs = null;
@@ -231,9 +231,10 @@ public class dbConnect {
             int rowsInserted = pstmt.executeUpdate();
             if (rowsInserted > 0) {
                 System.out.println("post생성 성공");
-            }
 
+            }
             pstmt.close();
+
         } catch (Exception ex) {
             ex.printStackTrace();
             System.out.println("post 생성중 오류 발생.");
