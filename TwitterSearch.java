@@ -102,30 +102,6 @@ public class TwitterSearch extends JFrame {
         return searchPanel;
     }
 
-
-    private void animateExpansion(int startWidth, int endWidth) {
-        Timer timer = new Timer(5, null); // 5ms 간격으로 동작
-        timer.addActionListener(e -> {
-            int currentWidth = searchField.getWidth();
-            if (startWidth < endWidth) { // 확장
-                if (currentWidth < endWidth) {
-                    searchField.setPreferredSize(new Dimension(currentWidth + 5, searchField.getHeight()));
-                    searchField.revalidate();
-                } else {
-                    timer.stop();
-                }
-            } else { // 축소
-                if (currentWidth > endWidth) {
-                    searchField.setPreferredSize(new Dimension(currentWidth - 5, searchField.getHeight()));
-                    searchField.revalidate();
-                } else {
-                    timer.stop();
-                }
-            }
-        });
-        timer.start();
-    }
-
     private JPanel createHomePanel() {
         JPanel homePanel = new JPanel(new BorderLayout());
         homePanel.setBackground(new Color(240, 248, 255));
@@ -144,7 +120,7 @@ public class TwitterSearch extends JFrame {
 
     private JPanel createResultPanel() {
         resultPanel = new JPanel();
-        resultPanel.setBackground(new Color(240, 248, 255));
+        resultPanel.setBackground(Color.WHITE);
         resultPanel.setLayout(new BoxLayout(resultPanel, BoxLayout.Y_AXIS));
 
         JLabel label = new JLabel("Search results will appear here...");
@@ -328,40 +304,37 @@ public class TwitterSearch extends JFrame {
         }
     }
   
-    private boolean isFollowing(Connection conn, String userId) {
+    private boolean isFollowing(Connection conn, String userId) { 
         try (PreparedStatement stmt = conn.prepareStatement(
-                "SELECT * FROM follows WHERE follower_id = ? AND following_id = ?")) {
-            stmt.setString(1, "current_user_id"); // Replace with the actual logged-in user ID
-            stmt.setString(2, userId);
+                "SELECT * FROM follow WHERE follow_id = ? AND followed_id = ?")) {
+            stmt.setString(1, UserInfo.getInstance().getUserId()); // 로그인 사용자 ID
+            stmt.setString(2, userId); // 검색된 사용자 ID
             ResultSet rs = stmt.executeQuery();
-            return rs.next();
+            return rs.next(); // 결과가 있으면 팔로우 상태
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
-
     private void toggleFollow(Connection conn, String userId, JButton followButton) {
         try {
             if (isFollowing(conn, userId)) {
-                // If already following -> Unfollow
+                // 이미 팔로우 중인 경우 -> 언팔로우
                 try (PreparedStatement stmt = conn.prepareStatement(
-                        "DELETE FROM follows WHERE follower_id = ? AND following_id = ?")) {
-                    stmt.setString(1, "current_user_id"); // Replace with the actual logged-in user ID
-                    stmt.setString(2, userId);
+                        "DELETE FROM follow WHERE follow_id = ? AND followed_id = ?")) {
+                    stmt.setString(1, UserInfo.getInstance().getUserId()); // 로그인 사용자 ID
+                    stmt.setString(2, userId); // 검색된 사용자 ID
                     stmt.executeUpdate();
-
                     followButton.setText("Follow");
                     JOptionPane.showMessageDialog(followButton, "You have unfollowed this user.", "Notification", JOptionPane.INFORMATION_MESSAGE);
                 }
             } else {
-                // If not following -> Follow
+                // 팔로우 중이 아닌 경우 -> 팔로우
                 try (PreparedStatement stmt = conn.prepareStatement(
-                        "INSERT INTO follows (follower_id, following_id) VALUES (?, ?)")) {
-                    stmt.setString(1, "current_user_id"); // Replace with the actual logged-in user ID
-                    stmt.setString(2, userId);
+                        "INSERT INTO follow (follow_id, followed_id) VALUES (?, ?)")) {
+                    stmt.setString(1, UserInfo.getInstance().getUserId()); // 로그인 사용자 ID
+                    stmt.setString(2, userId); // 검색된 사용자 ID
                     stmt.executeUpdate();
-
                     followButton.setText("Unfollow");
                     JOptionPane.showMessageDialog(followButton, "You are now following this user.", "Notification", JOptionPane.INFORMATION_MESSAGE);
                 }
@@ -379,8 +352,6 @@ public class TwitterSearch extends JFrame {
     }
 
 
-    public static void main(String[] args) {
-        new TwitterSearch();
-    }
+    
 }
 
