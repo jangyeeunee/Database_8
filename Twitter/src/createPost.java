@@ -63,9 +63,6 @@ public class createPost extends JFrame {
         return createAt;
     }
 
-    public static void main(String[] args) {
-        createPost post = new createPost();
-    }
 }
 
 
