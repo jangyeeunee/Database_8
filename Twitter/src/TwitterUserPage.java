@@ -18,7 +18,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.ArrayList;
-
 public class TwitterUserPage extends JFrame {
     private String userId;
     private String userName;
@@ -30,8 +29,8 @@ public class TwitterUserPage extends JFrame {
         UserInfo userInfo = UserInfo.getInstance();
         this.userId = userInfo.getUserId();
         this.userName = userInfo.getUserFirstName() + " " + userInfo.getUserLastName();
-        this.followingCount = 10; 
-        this.followerCount = 100; 
+        this.followingCount = 10;
+        this.followerCount = 100;
 
         setTitle("Twitter User Profile");
         setSize(500, 800);
@@ -46,6 +45,7 @@ public class TwitterUserPage extends JFrame {
         mainPanel.setLayout(new BorderLayout());
         mainPanel.setBackground(Color.WHITE);
 
+        // Top Panel with user information
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BorderLayout());
         topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -80,6 +80,7 @@ public class TwitterUserPage extends JFrame {
 
         mainPanel.add(topPanel, BorderLayout.NORTH);
 
+        // Tabs for My Posts and Liked Posts
         JPanel tabPanel = new JPanel();
         tabPanel.setLayout(new BorderLayout());
         tabPanel.setBackground(Color.WHITE);
@@ -113,10 +114,7 @@ public class TwitterUserPage extends JFrame {
                 postPanel.setBackground(Color.WHITE);
                 postPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
                 
-                //post와 연동할 부분. 한 패널로 스크롤 가능하게 할 것.
-               // JLabel postLabel = new JLabel(post.getContent());
-               // postLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-                //postPanel.add(postLabel, BorderLayout.CENTER);
+                // Here you can add post content to the postPanel
                 postsPanel.add(postPanel);
             }
         }
@@ -126,23 +124,10 @@ public class TwitterUserPage extends JFrame {
         tabPanel.add(scrollPane, BorderLayout.CENTER);
 
         mainPanel.add(tabPanel, BorderLayout.CENTER);
-//하단, 이미지로 교체예정?
-        JPanel bottomNav = new JPanel();
-        bottomNav.setLayout(new GridLayout(1, 4));
-        bottomNav.setBackground(Color.WHITE);
 
-        JButton homeButton = new JButton("Home");
-        JButton searchButton = new JButton("Search");
-        JButton bookmarkButton = new JButton("Bookmark");
-        JButton postButton = new JButton("Post");
-
-        for (JButton navButton : new JButton[]{homeButton, searchButton, bookmarkButton, postButton}) {
-            navButton.setFont(new Font("Arial", Font.BOLD, 12));
-            navButton.setFocusPainted(false);
-            bottomNav.add(navButton);
-        }
-
-        mainPanel.add(bottomNav, BorderLayout.SOUTH);
+        // Replace Bottom Navigation with BottomPanel
+        BottomPanel bottomPanel = BottomPanel.getInstance();
+        mainPanel.add(bottomPanel.BottomPanel(), BorderLayout.SOUTH);
 
         add(mainPanel);
         setVisible(true);
