@@ -202,11 +202,43 @@ public class dbConnect {
                     comments.add(rs.getString("comment"));
                 }
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
+
         }
         return comments; // Return the list of comments
     }
 
+
+    public void CreatePost(Map<String, String> data, JFrame parentFrame) {
+
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            String query = "INSERT INTO POST(content, user_id, repost_id, create_at) VALUES (?, ?, ?, ?)";
+            PreparedStatement pstmt = con.prepareStatement(query);
+            Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis()); // 현재 시간
+
+            // 데이터 바인딩
+            pstmt.setString(1, data.get("content"));
+            pstmt.setString(2, UserInfo.getInstance().getUserId());
+            pstmt.setString(3, null);
+            pstmt.setTimestamp(4, currentTimestamp);
+
+            // 데이터베이스에 삽입
+            int rowsInserted = pstmt.executeUpdate();
+            if (rowsInserted > 0) {
+                System.out.println("post생성 성공");
+            }
+
+            pstmt.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.out.println("post 생성중 오류 발생.");
+        }
+
+    }
 
 }
