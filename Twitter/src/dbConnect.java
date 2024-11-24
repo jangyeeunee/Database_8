@@ -102,7 +102,7 @@ public class dbConnect {
         return false;
     }
 
-    public Post[] getFollowingPost(){
+    public Post[] getFollowingPost() {
         Statement stmt = null;
         ResultSet rs = null;
 
@@ -123,14 +123,14 @@ public class dbConnect {
             Post[] postData = new Post[columnCount];
 
             while (rs.next()) {
-                for(int i = 1; i <= columnCount; i++) {
+                for (int i = 1; i <= columnCount; i++) {
                     int postId = rs.getInt("post_id");
                     String content = rs.getString("content");
                     String userId = rs.getString("user_id");
                     Timestamp createAt = rs.getTimestamp("create_at");
                     int repost_id = rs.getInt("repost_id");
 
-                    postData[i-1] = new Post(postId,userId,content,repost_id,createAt);
+                    postData[i - 1] = new Post(postId, userId, content, repost_id, createAt);
 
                     System.out.println("Post ID: " + postId);
                     System.out.println("Content: " + content);
@@ -145,9 +145,39 @@ public class dbConnect {
 //                })
             }
             return postData;
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void CreatePost(Map<String, String> data, JFrame parentFrame) {
+
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            String query = "INSERT INTO POST(content, user_id, repost_id, create_at) VALUES (?, ?, ?, ?)";
+            PreparedStatement pstmt = con.prepareStatement(query);
+            Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis()); // 현재 시간
+
+            // 데이터 바인딩
+            pstmt.setString(1, data.get("content"));
+            pstmt.setString(2, UserInfo.getInstance().getUserId());
+            pstmt.setString(3, null);
+            pstmt.setTimestamp(4, currentTimestamp);
+
+            // 데이터베이스에 삽입
+            int rowsInserted = pstmt.executeUpdate();
+            if (rowsInserted > 0) {
+                System.out.println("post생성 성공");
+            }
+
+            pstmt.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.out.println("post 생성중 오류 발생.");
+        }
+
     }
 
 }
