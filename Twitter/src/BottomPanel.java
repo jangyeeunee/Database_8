@@ -47,7 +47,7 @@ public class BottomPanel {
 
         // Initialize addPost Button
         addPostButton = createIconButton("icon/addPostIcon.png");
-        addPostButton.addActionListener(e->{
+        addPostButton.addActionListener(e -> {
             updateIcons("addPost");
             MainFrame.getInstance().showPage("addPost");
         });
@@ -62,7 +62,7 @@ public class BottomPanel {
 
 
         userButton = createIconButton("icon/userIcon.png");
-        userButton.addActionListener(e->{
+        userButton.addActionListener(e -> {
             updateIcons("User");
             MainFrame.getInstance().showPage("User");
         });
