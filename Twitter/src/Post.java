@@ -88,6 +88,8 @@ public class Post extends JPanel {
             if (isLiked[0]) {
                 likeButton.setIcon(new ImageIcon(new ImageIcon("icon/likeIcon.png")
                         .getImage().getScaledInstance(25, 20, Image.SCALE_SMOOTH)));
+                dbConnect db = dbConnect.getInstance();
+                db.addLike(id);
             } else {
                 likeButton.setIcon(new ImageIcon(new ImageIcon("icon/likePressed.png")
                         .getImage().getScaledInstance(25, 20, Image.SCALE_SMOOTH)));
@@ -110,6 +112,8 @@ public class Post extends JPanel {
             if (isBookmarked[0]) {
                 bookmarkButton.setIcon(new ImageIcon(new ImageIcon("icon/bookmark.png")
                         .getImage().getScaledInstance(25, 20, Image.SCALE_SMOOTH)));
+                dbConnect db = dbConnect.getInstance();
+                db.addBookmark(id);
             } else {
                 bookmarkButton.setIcon(new ImageIcon(new ImageIcon("icon/Pressed.png")
                         .getImage().getScaledInstance(25, 20, Image.SCALE_SMOOTH)));

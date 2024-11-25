@@ -32,7 +32,7 @@ public class dbConnect {
                 System.out.println("login success");
                 user.setUserInfo(rs);
                 flag = true;
-             // TwitterHome 생성 후 홈 버튼 동작 호출
+                // TwitterHome 생성 후 홈 버튼 동작 호출
                 SwingUtilities.invokeLater(() -> {
                     BottomPanel button = BottomPanel.getInstance();
                     button.homeButton.doClick(); // 홈 버튼 동작 실행
@@ -140,7 +140,7 @@ public class dbConnect {
         }
     }
 
-    public Post[]getBookmarkPost() {
+    public Post[] getBookmarkPost() {
         ResultSet rs = null;
         System.out.println("getBookmarkPosts");
 
@@ -218,7 +218,7 @@ public class dbConnect {
 
         try {
             String query = "INSERT INTO POST(content, user_id, repost_id, create_at) VALUES (?, ?, ?, ?)";
-            PreparedStatement pstmt = con.prepareStatement(query);
+            PreparedStatement pstmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis()); // 현재 시간
 
             // 데이터 바인딩
@@ -229,10 +229,18 @@ public class dbConnect {
 
             // 데이터베이스에 삽입
             int rowsInserted = pstmt.executeUpdate();
-            if (rowsInserted > 0) {
-                System.out.println("post생성 성공");
 
-            }
+//            if (rowsInserted > 0) {
+//
+//                rs = pstmt.getGeneratedKeys();
+//
+//                //hash 테이블과 mapping
+//                if(rs.next()) {
+//                    int postId = rs.getInt(1);
+//                    mapHashtag(data.get("hashtag"), postId);
+//                    System.out.println("post생성 성공");
+//                }
+//            }
             pstmt.close();
 
         } catch (Exception ex) {
@@ -242,4 +250,75 @@ public class dbConnect {
 
     }
 
+    public void mapHashtag(String hashtag, int id) {
+        ResultSet rs = null;
+        String[] hashs = hashtag.split(", ");
+        int hashId = 0;
+        try {
+            for (int i = 0; i < hashs.length; i++) {
+                String query = "SELECT id FROM HASHTAG WHERE name = ?";
+                PreparedStatement pstmt = con.prepareStatement(query);
+                pstmt.setString(1, hashs[i]);
+                rs = pstmt.executeQuery();
+
+
+                if (rs.next()) {
+                    hashId = rs.getInt("id");
+                    System.out.println("hashtag: " + hashId);
+                    String query2 = "INSERT INTO POST_HASHTAG(post_id, hash_id) VALUES (?, ?)";
+                    PreparedStatement stmt = con.prepareStatement(query2);
+                    stmt.setInt(1, id);
+                    stmt.setInt(2, hashId);
+
+                    stmt.close();
+
+                } else {
+                    String query3 = "INSERT INTO HASHTAG(name) VALUES (?)";
+                    PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+                    stmt.setString(1, hashs[i]);
+                    System.out.println("hashtag: " + hashs[i]);
+
+                    ResultSet result = pstmt.getGeneratedKeys();
+
+                    String query2 = "INSERT INTO POST_HASHTAG(post_id, hash_id) VALUES (?, ?)";
+                    PreparedStatement stmt2 = con.prepareStatement(query2);
+                    stmt2.setInt(1, id);
+                    stmt2.setInt(2, result.getInt(1));
+
+                    stmt.close();
+                    stmt2.close();
+                }
+                pstmt.close();
+            }
+
+        } catch (SQLException e) {}
+    }
+
+    public void addBookmark(int postId)
+    {
+        String queryInsert = "INSERT INTO BOOKMARK_GROUP (post_id, user_id) VALUES (?, ?)";
+        try (PreparedStatement stmt = con.prepareStatement(queryInsert)) {
+            stmt.setInt(1, postId);
+            stmt.setString(2, UserInfo.getInstance().getUserId());
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+        }
+    }
+
+    public void addLike(int postId)
+    {
+        String queryInsert = "INSERT INTO POST_LIKE (post_id, user_id) VALUES (?, ?)";
+        try (PreparedStatement stmt = con.prepareStatement(queryInsert)) {
+            stmt.setInt(1, postId);
+            stmt.setString(2, UserInfo.getInstance().getUserId());
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+        }
+    }
 }
