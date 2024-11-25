@@ -24,7 +24,7 @@ public class dbConnect {
         UserInfo user = UserInfo.getInstance();
         boolean flag = false;
 
-    try {
+        try {
             stmt = con.createStatement();
             String s1 = "select * from user where id = \"" + Id + "\" and pwd = \"" + Password + "\"";
             rs = stmt.executeQuery(s1);
@@ -202,115 +202,95 @@ public class dbConnect {
                     comments.add(rs.getString("comment"));
                 }
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
+
         }
         return comments; // Return the list of comments
     }
-    
 
-    public List<String> getUserPosts(String userId) {
-        List<String> posts = new ArrayList<>();
+
+    public void CreatePost(Map<String, String> data, JFrame parentFrame) {
+
+        Statement stmt = null;
         ResultSet rs = null;
+
+        try {
+            String query = "INSERT INTO POST(content, user_id, repost_id, create_at) VALUES (?, ?, ?, ?)";
+            PreparedStatement pstmt = con.prepareStatement(query);
+            Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis()); // 현재 시간
+
+            // 데이터 바인딩
+            pstmt.setString(1, data.get("content"));
+            pstmt.setString(2, UserInfo.getInstance().getUserId());
+            pstmt.setString(3, null);
+            pstmt.setTimestamp(4, currentTimestamp);
+
+            // 데이터베이스에 삽입
+            int rowsInserted = pstmt.executeUpdate();
+            if (rowsInserted > 0) {
+                System.out.println("post생성 성공");
+            }
+
+            pstmt.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.out.println("post 생성중 오류 발생.");
+        }
+
+    }public List<Post> getUserPosts(String userId) {
+        List<Post> posts = new ArrayList<>();
         
         try {
-            String query = "SELECT content FROM post WHERE user_id = ? ORDER BY create_at DESC";
-            PreparedStatement pstmt = con.prepareStatement(query);
-            pstmt.setString(1, userId);
-            rs = pstmt.executeQuery();
+            String query = "SELECT * FROM POST WHERE user_id = ?";
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setString(1, userId);
+            ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
+                int postId = rs.getInt("id");
                 String content = rs.getString("content");
-                posts.add(content);
+                int repostId = rs.getInt("repost_id");
+                Timestamp createAt = rs.getTimestamp("create_at");
+                
+                // Create Post object and add to the list
+                Post post = new Post(postId, userId, content, repostId, createAt);
+                posts.add(post);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        return posts;
+    }public List<Post> getUserLikedPosts(String userId) {
+        List<Post> posts = new ArrayList<>();
         
+        try {
+            // 좋아요를 누른 포스트 가져오는 쿼리
+            String query = "SELECT p.id, p.user_id, p.content, p.repost_id, p.create_at " +
+                           "FROM POST p " +
+                           "JOIN POST_LIKE pl ON p.id = pl.post_id " +
+                           "WHERE pl.user_id = ?";
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setString(1, userId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                int postId = rs.getInt("id");
+                String content = rs.getString("content");
+                String postUserId = rs.getString("user_id");  // 포스트 작성자 ID
+                int repostId = rs.getInt("repost_id");
+                Timestamp createAt = rs.getTimestamp("create_at");
+                
+                // Post 객체 생성 후 리스트에 추가
+                Post post = new Post(postId, postUserId, content, repostId, createAt);
+                posts.add(post);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         return posts;
     }
-    public List<PostDetails> getUserPostsWithDetails(String userId) {
-        List<PostDetails> postDetailsList = new ArrayList<>();
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            String query = "SELECT p.content, p.create_at, u.first_name, u.last_name, " +
-                           "(SELECT COUNT(*) FROM comment c WHERE c.post_id = p.id) AS comment_count, " +
-                           "(SELECT COUNT(*) FROM post_like pl WHERE pl.post_id = p.id) AS like_count " +
-                           "FROM post p " +
-                           "JOIN user u ON p.user_id = u.id " +
-                           "WHERE p.user_id = ? " +
-                           "ORDER BY p.create_at DESC"; // Order by post creation date
-
-            stmt = con.prepareStatement(query);
-            stmt.setString(1, userId);
-            rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                String content = rs.getString("content");
-                String creationDate = rs.getString("create_at");
-                String username = rs.getString("first_name") + " " + rs.getString("last_name"); // Display full name
-                int commentCount = rs.getInt("comment_count");
-                int likeCount = rs.getInt("like_count");
-
-                postDetailsList.add(new PostDetails(content, creationDate, username, commentCount, likeCount));
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return postDetailsList;
-    }
-public List<PostDetails> getUserLikedPosts(String userId) {
-    List<PostDetails> postDetailsList = new ArrayList<>();
-    PreparedStatement stmt = null;
-    ResultSet rs = null;
-
-    try {
-
-        String query = "SELECT p.content, p.create_at, u.first_name, u.last_name, " +
-                       "(SELECT COUNT(*) FROM comment c WHERE c.post_id = p.id) AS comment_count, " +
-                       "(SELECT COUNT(*) FROM post_like pl WHERE pl.post_id = p.id) AS like_count " +
-                       "FROM post p " +
-                       "JOIN user u ON p.user_id = u.id " +
-                       "JOIN post_like pl ON p.id = pl.post_id " +
-                       "WHERE pl.user_id = ? " +
-                       "ORDER BY p.create_at DESC"; // Order by post creation date
-
-        stmt = con.prepareStatement(query);
-        stmt.setString(1, userId);
-        rs = stmt.executeQuery();
-
-        while (rs.next()) {
-            String content = rs.getString("content");
-            String creationDate = rs.getString("create_at");
-            String username = rs.getString("first_name") + " " + rs.getString("last_name");
-            int commentCount = rs.getInt("comment_count");
-            int likeCount = rs.getInt("like_count");
-
-            postDetailsList.add(new PostDetails(content, creationDate, username, commentCount, likeCount));
-        }
-
-    } catch (SQLException e) {
-        e.printStackTrace();
-    } finally {
-        try {
-            if (rs != null) rs.close();
-            if (stmt != null) stmt.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    return postDetailsList;
-}
 }
