@@ -65,9 +65,8 @@ public class BottomPanel {
         userButton = createIconButton("icon/userIcon.png");
         userButton.addActionListener(e -> {
             updateIcons("User");
-            MainFrame.getInstance().showPage("User");
+            MainFrame.getInstance().showPage("User"); // Show User Page
         });
-
     }
 
     public static JButton createIconButton(String iconPath) {
