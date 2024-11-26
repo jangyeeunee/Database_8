@@ -20,6 +20,7 @@ public class MainFrame extends JFrame {
         mainPanel.add(BookmarkPage.getInstance(), "Bookmark");
         mainPanel.add(new TwitterUserPage(), "User");
 
+
         // Add Bottom Panel
         add(BottomPanel.getInstance().BottomPanel(), BorderLayout.SOUTH);
         add(mainPanel, BorderLayout.CENTER);

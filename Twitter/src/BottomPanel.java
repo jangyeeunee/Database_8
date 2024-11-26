@@ -47,9 +47,10 @@ public class BottomPanel {
 
         // Initialize addPost Button
         addPostButton = createIconButton("icon/addPostIcon.png");
-        addPostButton.addActionListener(e->{
+        addPostButton.addActionListener(e -> {
             updateIcons("addPost");
-            MainFrame.getInstance().showPage("addPost");
+            createPost createdPost = new createPost();
+            createdPost.setVisible(true);
         });
 
 
