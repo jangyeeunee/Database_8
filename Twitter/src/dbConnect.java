@@ -211,14 +211,18 @@ public class dbConnect {
     }
 
 
-    public void CreatePost(Map<String, String> data) {
+
+    public void CreatePost(Map<String, String> data,JFrame parentFrame) {
+
 
         Statement stmt = null;
         ResultSet rs = null;
 
         try {
             String query = "INSERT INTO POST(content, user_id, repost_id, create_at) VALUES (?, ?, ?, ?)";
+
             PreparedStatement pstmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+
             Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis()); // 현재 시간
 
             // 데이터 바인딩
@@ -229,6 +233,7 @@ public class dbConnect {
 
             // 데이터베이스에 삽입
             int rowsInserted = pstmt.executeUpdate();
+
 
 //            if (rowsInserted > 0) {
 //
@@ -241,14 +246,74 @@ public class dbConnect {
 //                    System.out.println("post생성 성공");
 //                }
 //            }
+            parentFrame.dispose();
             pstmt.close();
+
 
         } catch (Exception ex) {
             ex.printStackTrace();
             System.out.println("post 생성중 오류 발생.");
         }
 
+
+    }public List<Post> getUserPosts(String userId) {
+        List<Post> posts = new ArrayList<>();
+        
+        try {
+            String query = "SELECT * FROM POST WHERE user_id = ?";
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setString(1, userId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                int postId = rs.getInt("id");
+                String content = rs.getString("content");
+                int repostId = rs.getInt("repost_id");
+                Timestamp createAt = rs.getTimestamp("create_at");
+                
+                // Create Post object and add to the list
+                Post post = new Post(postId, userId, content, repostId, createAt);
+                posts.add(post);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return posts;
     }
+  public List<Post> getUserLikedPosts(String userId) {
+        List<Post> posts = new ArrayList<>();
+        
+        try {
+            // 좋아요를 누른 포스트 가져오는 쿼리
+            String query = "SELECT p.id, p.user_id, p.content, p.repost_id, p.create_at " +
+                           "FROM POST p " +
+                           "JOIN POST_LIKE pl ON p.id = pl.post_id " +
+                           "WHERE pl.user_id = ?";
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setString(1, userId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                int postId = rs.getInt("id");
+                String content = rs.getString("content");
+                String postUserId = rs.getString("user_id");  // 포스트 작성자 ID
+                int repostId = rs.getInt("repost_id");
+                Timestamp createAt = rs.getTimestamp("create_at");
+                
+                // Post 객체 생성 후 리스트에 추가
+                Post post = new Post(postId, postUserId, content, repostId, createAt);
+                posts.add(post);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return posts;
+    }
+
+
+    
 
     public void mapHashtag(String hashtag, int id) {
         ResultSet rs = null;
@@ -321,7 +386,6 @@ public class dbConnect {
 
         }
     }
-
     public ResultSet getPostsByHashtag(String hashtag) throws SQLException {
         String query = "SELECT user_id, content FROM post WHERE content LIKE ?";
         PreparedStatement stmt = con.prepareStatement(query);
