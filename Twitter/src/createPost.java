@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
-public class createPost extends JPanel {
+public class createPost extends JFrame {
     private static createPost createpost;
     private String userId;
     private String content;
@@ -13,6 +13,10 @@ public class createPost extends JPanel {
 
     public createPost() {
         Map<String, String> data = new HashMap<>();
+        setTitle("Add Comment");
+        setSize(400, 300);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLayout(new BorderLayout());
 
         // Create the main panel
         JPanel panel = new JPanel();
@@ -23,33 +27,34 @@ public class createPost extends JPanel {
         JTextArea content = new JTextArea();
         content.setWrapStyleWord(true); // Enable word wrapping
         content.setLineWrap(true);
-        content.setMaximumSize(new Dimension(300, 300));
         content.setFont(new Font("Arial", Font.PLAIN, 14));
-        content.setBorder(BorderFactory.createTitledBorder("Enter your post content"));
+        content.setBorder(BorderFactory.createTitledBorder("write your content"));
+        JScrollPane scrollPane = new JScrollPane(content);
+        add(scrollPane, BorderLayout.CENTER);
         panel.add(content);
 
         //create hashtag filed
         JTextField hashtag = new JTextField(15);
-        hashtag.setMaximumSize(new Dimension(300, 30));
+        hashtag.setMaximumSize(new Dimension(this.getWidth(), 10));
         hashtag.setFont(new Font("Arial", Font.PLAIN, 14));
         hashtag.setBorder(BorderFactory.createTitledBorder("Hashtag"));
         panel.add(hashtag);
 
         //create upload button
-        JButton loginButton = new JButton("upload post");
-        loginButton.setBackground(new Color(29, 161, 242));
-        loginButton.setForeground(Color.BLACK);
-        loginButton.setFont(new Font("Arial", Font.BOLD, 14));
-        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panel.add(loginButton);
+        JButton uploadpost = new JButton("upload post");
+        uploadpost.setBackground(new Color(29, 161, 242));
+        uploadpost.setForeground(Color.BLACK);
+        uploadpost.setFont(new Font("Arial", Font.BOLD, 14));
+        uploadpost.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(uploadpost);
 
         panel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        loginButton.addActionListener(e -> {
+        uploadpost.addActionListener(e -> {
             data.put("content", content.getText());
             data.put("hashtag", hashtag.getText());
             dbConnect db = dbConnect.getInstance();
-            db.CreatePost(data);
+            db.CreatePost(data,this);
         });
 
         add(panel);
@@ -63,6 +68,9 @@ public class createPost extends JPanel {
         return createpost;
     }
 
+    public static void main(String[] args) {
+        createpost = new createPost();
+    }
 }
 
 

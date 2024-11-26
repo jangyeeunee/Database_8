@@ -211,7 +211,7 @@ public class dbConnect {
     }
 
 
-    public void CreatePost(Map<String, String> data) {
+    public void CreatePost(Map<String, String> data,JFrame parentFrame) {
 
         Statement stmt = null;
         ResultSet rs = null;
@@ -241,6 +241,7 @@ public class dbConnect {
 //                    System.out.println("post생성 성공");
 //                }
 //            }
+            parentFrame.dispose();
             pstmt.close();
 
         } catch (Exception ex) {
