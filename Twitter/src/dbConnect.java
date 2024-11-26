@@ -57,7 +57,7 @@ public class dbConnect {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             String url = "jdbc:mysql://localhost:3306/TWITTER";
-            String user = "root", passwd = "wldmsdl7715";
+            String user = "root", passwd = "tndk1008";
             con = DriverManager.getConnection(url, user, passwd);
             System.out.println(con);
         } catch (SQLException | ClassNotFoundException e) {
@@ -258,7 +258,7 @@ public class dbConnect {
 
     }public List<Post> getUserPosts(String userId) {
         List<Post> posts = new ArrayList<>();
-        
+
         try {
             String query = "SELECT * FROM POST WHERE user_id = ?";
             PreparedStatement ps = con.prepareStatement(query);
@@ -270,7 +270,7 @@ public class dbConnect {
                 String content = rs.getString("content");
                 int repostId = rs.getInt("repost_id");
                 Timestamp createAt = rs.getTimestamp("create_at");
-                
+
                 // Create Post object and add to the list
                 Post post = new Post(postId, userId, content, repostId, createAt);
                 posts.add(post);
@@ -281,15 +281,15 @@ public class dbConnect {
 
         return posts;
     }
-  public List<Post> getUserLikedPosts(String userId) {
+    public List<Post> getUserLikedPosts(String userId) {
         List<Post> posts = new ArrayList<>();
-        
+
         try {
             // 좋아요를 누른 포스트 가져오는 쿼리
             String query = "SELECT p.id, p.user_id, p.content, p.repost_id, p.create_at " +
-                           "FROM POST p " +
-                           "JOIN POST_LIKE pl ON p.id = pl.post_id " +
-                           "WHERE pl.user_id = ?";
+                    "FROM POST p " +
+                    "JOIN POST_LIKE pl ON p.id = pl.post_id " +
+                    "WHERE pl.user_id = ?";
             PreparedStatement ps = con.prepareStatement(query);
             ps.setString(1, userId);
             ResultSet rs = ps.executeQuery();
@@ -300,7 +300,7 @@ public class dbConnect {
                 String postUserId = rs.getString("user_id");  // 포스트 작성자 ID
                 int repostId = rs.getInt("repost_id");
                 Timestamp createAt = rs.getTimestamp("create_at");
-                
+
                 // Post 객체 생성 후 리스트에 추가
                 Post post = new Post(postId, postUserId, content, repostId, createAt);
                 posts.add(post);
@@ -313,7 +313,7 @@ public class dbConnect {
     }
 
 
-    
+
 
     public void mapHashtag(String hashtag, int id) {
         ResultSet rs = null;
