@@ -18,6 +18,7 @@ public class MainFrame extends JFrame {
         // Add pages
         mainPanel.add(TwitterHome.getInstance(), "Home");
         mainPanel.add(BookmarkPage.getInstance(), "Bookmark");
+        mainPanel.add(TwitterSearch.getInstance(),"TwitterSearch");
         mainPanel.add(new TwitterUserPage(), "User");
 
 

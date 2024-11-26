@@ -41,7 +41,7 @@ public class BottomPanel {
         searchButton = createIconButton("icon/searchIcon.png");
         searchButton.addActionListener(e -> {
             updateIcons("Search");
-            MainFrame.getInstance().showPage("Search");
+            MainFrame.getInstance().showPage("TwitterSearch");
         });
 
 
