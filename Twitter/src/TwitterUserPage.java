@@ -17,7 +17,7 @@ public class TwitterUserPage extends JFrame {
         this.followerCount = 100;  // 임시 값
 
         setTitle("Twitter User Profile");
-        setSize(500, 800);
+        setSize(400, 800);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
