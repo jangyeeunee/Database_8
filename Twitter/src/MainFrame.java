@@ -19,6 +19,7 @@ public class MainFrame extends JFrame {
         mainPanel.add(TwitterHome.getInstance(), "Home");
         mainPanel.add(BookmarkPage.getInstance(), "Bookmark");
         mainPanel.add(createPost.getInstance(), "addPost");
+        mainPanel.add(TwitterSearch.getInstance(),"TwitterSearch");
 
         // Add Bottom Panel
         add(BottomPanel.getInstance().BottomPanel(), BorderLayout.SOUTH);

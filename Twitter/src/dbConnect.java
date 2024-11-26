@@ -57,7 +57,7 @@ public class dbConnect {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             String url = "jdbc:mysql://localhost:3306/TWITTER";
-            String user = "root", passwd = "tndk1008";
+            String user = "root", passwd = "wldmsdl7715";
             con = DriverManager.getConnection(url, user, passwd);
             System.out.println(con);
         } catch (SQLException | ClassNotFoundException e) {
@@ -319,6 +319,46 @@ public class dbConnect {
         } catch (SQLException e) {
             e.printStackTrace();
 
+        }
+    }
+
+    public ResultSet getPostsByHashtag(String hashtag) throws SQLException {
+        String query = "SELECT user_id, content FROM post WHERE content LIKE ?";
+        PreparedStatement stmt = con.prepareStatement(query);
+        stmt.setString(1, "%" + hashtag + "%");
+        return stmt.executeQuery();
+    }
+
+    public ResultSet getPostsByUser(String userId) throws SQLException {
+        String query = "SELECT id FROM user WHERE id = ?";
+        PreparedStatement stmt = con.prepareStatement(query);
+        stmt.setString(1, userId);
+        return stmt.executeQuery();
+    }
+    public boolean isFollowing(String userId) throws SQLException {
+        String query = "SELECT * FROM follow WHERE follow_id = ? AND followed_id = ?";
+        try (PreparedStatement stmt = con.prepareStatement(query)) {
+            stmt.setString(1, UserInfo.getInstance().getUserId()); // 로그인한 사용자 ID
+            stmt.setString(2, userId); // 검색된 사용자 ID
+            ResultSet rs = stmt.executeQuery();
+            return rs.next(); // 결과가 있으면 팔로우 상태, 없으면 팔로우 안 함
+        }
+    }
+
+    // Follow/Unfollow
+    public void toggleFollow(String userId) throws SQLException {
+        if (isFollowing(userId)) {
+            String sql = "DELETE FROM follow WHERE follow_id = ? AND followed_id = ?";
+            PreparedStatement stmt = con.prepareStatement(sql);
+            stmt.setString(1, UserInfo.getInstance().getUserId());
+            stmt.setString(2, userId);
+            stmt.executeUpdate();
+        } else {
+            String sql = "INSERT INTO follow (follow_id, followed_id) VALUES (?, ?)";
+            PreparedStatement stmt = con.prepareStatement(sql);
+            stmt.setString(1, UserInfo.getInstance().getUserId());
+            stmt.setString(2, userId);
+            stmt.executeUpdate();
         }
     }
 }

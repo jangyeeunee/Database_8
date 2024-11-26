@@ -3,44 +3,35 @@ import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
 
-public class TwitterSearch extends JFrame {
+public class TwitterSearch extends JPanel {
+    private static TwitterSearch instance;
     private CardLayout cardLayout;
     private JPanel centerPanel;
     private JTextField searchField;
     private JPanel resultPanel;
     private JPanel topPanel;
-
-    // Bottom panel buttons
-    private JButton homeButton;
-    private JButton bookmarkButton;
-    private JButton searchButton;
-    private JButton userButton;
-    private JButton addPostButton;
+    private JPanel searchPanel;
 
     public TwitterSearch() {
-        setTitle("Twitter Search");
-        setSize(400, 800);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        instance = this;
 
         setLayout(new BorderLayout());
+        JPanel northPanel = new JPanel(new BorderLayout());
 
-        // 상단 검색창 패널
-        topPanel = createSearchBar();
-        topPanel.setVisible(false);
-        add(topPanel, BorderLayout.NORTH);
+        topPanel = new TopPanel().topPanel("Search");
+        northPanel.add(topPanel, BorderLayout.NORTH);
 
-        // CardLayout과 centerPanel 초기화
+        searchPanel = createSearchBar();
+        searchPanel.setVisible(true);
+        northPanel.add(searchPanel, BorderLayout.SOUTH);
+
+        add(northPanel, BorderLayout.NORTH);
+
+        // Post Container
         cardLayout = new CardLayout();
         centerPanel = new JPanel(cardLayout);
-
-        centerPanel.add(createHomePanel(), "Home");
-        centerPanel.add(createResultPanel(), "Search");
-        centerPanel.add(createBookmarkPanel(), "Bookmark");
+        centerPanel.add(createResultPanel(), "TwitterSearch");
         add(centerPanel, BorderLayout.CENTER);
-
-        JPanel bottomPanel = createBottomPanel();
-        add(bottomPanel, BorderLayout.SOUTH);
 
         setVisible(true);
     }
@@ -80,7 +71,6 @@ public class TwitterSearch extends JFrame {
                     searchField.setText("");
                     searchField.setForeground(Color.BLACK);
                 }
-                animateExpansion(250, 400); // 검색창 확장
             }
 
             @Override
@@ -89,20 +79,10 @@ public class TwitterSearch extends JFrame {
                     searchField.setText("Search");
                     searchField.setForeground(Color.GRAY);
                 }
-                animateExpansion(400, 250); // 검색창 축소
             }
         });
 
-        // 스페이스바를 눌렀을 때 검색 실행
-        searchField.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                // 스페이스바가 눌렸을 때만 검색을 수행
-                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    performSearch(searchField.getText().trim());  // 검색어의 공백을 제거하고 검색
-                }
-            }
-        });
+        searchField.addActionListener(e -> performSearch(searchField.getText().trim()));
 
         searchPanel.add(iconLabel, BorderLayout.WEST);
         searchPanel.add(searchField, BorderLayout.CENTER);
@@ -110,48 +90,9 @@ public class TwitterSearch extends JFrame {
         return searchPanel;
     }
 
-    private void animateExpansion(int startWidth, int endWidth) {
-        Timer timer = new Timer(5, null); // 5ms 간격으로 동작
-        timer.addActionListener(e -> {
-            int currentWidth = searchField.getWidth();
-            if (startWidth < endWidth) { // 확장
-                if (currentWidth < endWidth) {
-                    searchField.setPreferredSize(new Dimension(currentWidth + 5, searchField.getHeight()));
-                    searchField.revalidate();
-                } else {
-                    timer.stop();
-                }
-            } else { // 축소
-                if (currentWidth > endWidth) {
-                    searchField.setPreferredSize(new Dimension(currentWidth - 5, searchField.getHeight()));
-                    searchField.revalidate();
-                } else {
-                    timer.stop();
-                }
-            }
-        });
-        timer.start();
-    }
-
-    private JPanel createHomePanel() {
-        JPanel homePanel = new JPanel(new BorderLayout());
-        homePanel.setBackground(new Color(240, 248, 255));
-
-        JPanel headerPanel = new JPanel();
-        headerPanel.setBackground(new Color(240, 248, 255));
-        JLabel welcomeLabel = new JLabel("Follow");
-        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        welcomeLabel.setForeground(new Color(29, 161, 242)); // Twitter 기본 색상
-        headerPanel.add(welcomeLabel);
-
-        homePanel.add(headerPanel, BorderLayout.NORTH);
-
-        return homePanel;
-    }
-
     private JPanel createResultPanel() {
         resultPanel = new JPanel();
-        resultPanel.setBackground(new Color(240, 248, 255));
+        resultPanel.setBackground(Color.WHITE);
         resultPanel.setLayout(new BoxLayout(resultPanel, BoxLayout.Y_AXIS));
 
         JLabel label = new JLabel("Search results will appear here...");
@@ -162,67 +103,6 @@ public class TwitterSearch extends JFrame {
         return resultPanel;
     }
 
-    private JPanel createBookmarkPanel() {
-        JPanel bookmarkPanel = new JPanel();
-        bookmarkPanel.setBackground(new Color(240, 248, 255));
-        JLabel label = new JLabel("Your Bookmarks");
-        label.setFont(new Font("Arial", Font.BOLD, 18));
-        bookmarkPanel.add(label);
-        return bookmarkPanel;
-    }
-
-    private JPanel createBottomPanel() {
-        JPanel bottomPanel = new JPanel(new GridLayout(1, 5));
-        bottomPanel.setBackground(Color.WHITE);
-        bottomPanel.setPreferredSize(new Dimension(400, 50));
-
-        homeButton = createIconButton("icon/homePressed.png", "Home");
-        homeButton.addActionListener(e -> {
-            updateBottomIcons("Home");
-            cardLayout.show(centerPanel, "Home");
-            topPanel.setVisible(false);
-        });
-        bottomPanel.add(homeButton);
-
-        searchButton = createIconButton("icon/searchIcon.png", "Search");
-        searchButton.addActionListener(e -> {
-            updateBottomIcons("Search");
-            cardLayout.show(centerPanel, "Search");
-            topPanel.setVisible(true);
-        });
-        bottomPanel.add(searchButton);
-
-        addPostButton = createIconButton("icon/addPostIcon.png", "Add");
-        bottomPanel.add(addPostButton);
-
-        bookmarkButton = createIconButton("icon/bookmarkIcon.png", "Bookmark");
-        bookmarkButton.addActionListener(e -> {
-            updateBottomIcons("Bookmark");
-            cardLayout.show(centerPanel, "Bookmark");
-            topPanel.setVisible(false); // 검색창 숨기기
-        });
-        bottomPanel.add(bookmarkButton);
-
-        userButton = createIconButton("icon/userIcon.png", "User");
-        bottomPanel.add(userButton);
-
-        return bottomPanel;
-    }
-
-    private JButton createIconButton(String iconPath, String fallbackText) {
-        JButton button;
-        try {
-            ImageIcon icon = new ImageIcon(iconPath);
-            Image img = icon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-            button = new JButton(new ImageIcon(img));
-        } catch (Exception e) {
-            button = new JButton(fallbackText);
-        }
-        button.setFocusPainted(false);
-        button.setBorderPainted(false);
-        button.setContentAreaFilled(false);
-        return button;
-    }
 
     private void performSearch(String query) {
         if (query.isEmpty() || query.equals("Search")) {
@@ -236,65 +116,116 @@ public class TwitterSearch extends JFrame {
             return;
         }
 
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/twitter", "root", "5268");
-             PreparedStatement stmt = conn.prepareStatement(
-                     query.startsWith("#") ? "SELECT * FROM post WHERE content LIKE ?" : "SELECT * FROM post WHERE user_id = ?")) {
+        dbConnect db = dbConnect.getInstance();
+
+        try {
+            resultPanel.removeAll();
 
             if (query.startsWith("#")) {
-                stmt.setString(1, "%" + query + "%"); // 해시태그 검색
-            } else {
-                stmt.setString(1, query); // 사용자 ID 검색
-            }
-
-            ResultSet rs = stmt.executeQuery();
-            resultPanel.removeAll(); // 기존 결과 삭제
-
-            if (rs.next()) {
-                JLabel resultTitle = new JLabel(query.startsWith("#") ? "Search Results for Hashtag:" : "Posts by User:");
-                resultTitle.setFont(new Font("Arial", Font.BOLD, 14));
-                resultTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
-                resultPanel.add(resultTitle);
-
-                do {
+                // Hashtag search
+                ResultSet rs = db.getPostsByHashtag(query);
+                while (rs.next()) {
                     String userId = rs.getString("user_id");
                     String content = rs.getString("content");
-                    JPanel postPanel = new JPanel();
-                    postPanel.setLayout(new BoxLayout(postPanel, BoxLayout.Y_AXIS));
-                    postPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+                    JPanel postPanel = new JPanel(new BorderLayout());
+                    postPanel.setBackground(Color.WHITE);
+                    postPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+                    postPanel.setMaximumSize(new Dimension(600, 80));
 
                     JLabel userLabel = new JLabel("User: " + userId);
                     userLabel.setFont(new Font("Arial", Font.BOLD, 12));
-                    JLabel contentLabel = new JLabel(content);
-                    contentLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+                    userLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
-                    postPanel.add(userLabel);
-                    postPanel.add(contentLabel);
+                    JLabel contentLabel = new JLabel("<html>" + content + "</html>");
+                    contentLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+                    contentLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+
+                    postPanel.add(userLabel, BorderLayout.NORTH);
+                    postPanel.add(contentLabel, BorderLayout.CENTER);
+
                     resultPanel.add(postPanel);
-                } while (rs.next());
+                    resultPanel.add(Box.createVerticalStrut(10));
+                }
+            }
+            else if (query.startsWith("@")) {
+                // User ID search
+                ResultSet rs = db.getPostsByUser(query.substring(1)); // Remove "@" from query
+                if (rs.next()) {
+                    String userId = rs.getString("id");
+
+                    JPanel userPanel = new JPanel(new BorderLayout());
+                    userPanel.setBackground(Color.WHITE);
+                    userPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+                    userPanel.setMaximumSize(new Dimension(400, 50));
+
+                    JLabel userLabel = new JLabel("@" + userId);
+                    userLabel.setFont(new Font("Arial", Font.BOLD, 14));
+                    userLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // 여백 추가
+
+                    JButton followButton = new JButton("Follow");
+                    followButton.setFont(new Font("Arial", Font.PLAIN, 12));
+                    followButton.setPreferredSize(new Dimension(80, 30)); // 버튼 크기 설정
+                    followButton.addActionListener(e -> {
+                        try {
+                            db.toggleFollow(userId);
+                            followButton.setText(db.isFollowing(userId) ? "Unfollow" : "Follow");
+                        } catch (SQLException ex) {
+                            ex.printStackTrace();
+                        }
+                    });
+
+                    userPanel.add(userLabel, BorderLayout.WEST); // 왼쪽 정렬
+                    userPanel.add(followButton, BorderLayout.EAST); // 오른쪽 정렬
+
+                    resultPanel.add(userPanel);
+                    resultPanel.add(Box.createVerticalStrut(10));
+                } else {
+                    JLabel noResultsLabel = new JLabel("User not found.");
+                    noResultsLabel.setFont(new Font("Arial", Font.ITALIC, 14));
+                    noResultsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                    resultPanel.add(noResultsLabel);
+                }
+            }
+
+            resultPanel.revalidate();
+            resultPanel.repaint();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    private void toggleFollow(Connection conn, String userId, JButton followButton) {
+        dbConnect db = dbConnect.getInstance(); // dbConnect 객체를 가져옴
+        try {
+            if (db.isFollowing(userId)) {
+                // 이미 팔로우 중인 경우 -> 언팔로우
+                db.toggleFollow(userId);  // 팔로우 해제
+                followButton.setText("Follow");
+                JOptionPane.showMessageDialog(followButton, "You have unfollowed this user.", "Notification", JOptionPane.INFORMATION_MESSAGE);
             } else {
-                JLabel noResultsLabel = new JLabel("No results found.");
-                noResultsLabel.setFont(new Font("Arial", Font.ITALIC, 14));
-                noResultsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-                resultPanel.add(noResultsLabel);
+                // 팔로우 중이 아닌 경우 -> 팔로우
+                db.toggleFollow(userId);  // 팔로우 추가
+                followButton.setText("Unfollow");
+                JOptionPane.showMessageDialog(followButton, "You are now following this user.", "Notification", JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        followButton.addActionListener(e -> {
+            try {
+                db.toggleFollow(userId);
+                followButton.setText(db.isFollowing(userId) ? "Unfollow" : "Follow");
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        });
 
-        resultPanel.revalidate();
-        resultPanel.repaint();
     }
 
-
-    private void updateBottomIcons(String activeTab) {
-        homeButton.setIcon(new ImageIcon("icon/home" + (activeTab.equals("Home") ? "Active.png" : "Inactive.png")));
-        searchButton.setIcon(new ImageIcon("icon/search" + (activeTab.equals("Search") ? "Active.png" : "Inactive.png")));
-        bookmarkButton.setIcon(new ImageIcon("icon/bookmark" + (activeTab.equals("Bookmark") ? "Active.png" : "Inactive.png")));
-    }
-
-
-    public static void main(String[] args) {
-        new TwitterSearch();
+    public static TwitterSearch getInstance() {
+        if (instance == null) {
+            instance = new TwitterSearch();
+        }
+        return instance;
     }
 }
-
