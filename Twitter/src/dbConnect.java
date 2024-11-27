@@ -57,7 +57,7 @@ public class dbConnect {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             String url = "jdbc:mysql://localhost:3306/TWITTER";
-            String user = "root", passwd = "tndk1008";
+            String user = "root", passwd = "yuyu1234";
             con = DriverManager.getConnection(url, user, passwd);
             System.out.println(con);
         } catch (SQLException | ClassNotFoundException e) {
@@ -423,6 +423,68 @@ public class dbConnect {
             stmt.setString(1, UserInfo.getInstance().getUserId());
             stmt.setString(2, userId);
             stmt.executeUpdate();
+        }
+    }
+
+    public boolean updateUserInfo(String userId, String newPassword, String newFirstName, String newLastName, String newEmail, String newPhone, String newBirth, String newGender) {
+        String query = "UPDATE USER SET pwd = ?, first_name = ?, last_name = ?, email = ?, phone_number = ?, birth = ?, gender = ? WHERE id = ?";
+
+        try (PreparedStatement stmt = con.prepareStatement(query)) {
+            // Set parameters in the query
+            stmt.setString(1, newPassword);
+            stmt.setString(2, newFirstName);
+            stmt.setString(3, newLastName);
+            stmt.setString(4, newEmail);
+            stmt.setString(5, newPhone);
+            stmt.setString(6, newBirth);
+            stmt.setString(7, newGender);
+            stmt.setString(8, userId);
+
+            // Execute update and check if the row is updated
+            int rowsUpdated = stmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                return true; // Success, user info updated
+            } else {
+                System.out.println("User not found or no changes detected.");
+                return false; // Failure, user not found or no changes
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false; // Error, handle exception
+        }
+    }
+    public void updateFollowStats() {
+        UserInfo user = UserInfo.getInstance();
+        String userId = user.getUserId();
+
+        if (userId == null || userId.isEmpty()) {
+            System.out.println("Login please");
+            return;
+        }
+
+        try {
+            String followerQuery = "SELECT COUNT(*) AS follower_count FROM FOLLOW WHERE followed_id = ?";
+            PreparedStatement followerStmt = con.prepareStatement(followerQuery);
+            followerStmt.setString(1, userId);
+            ResultSet followerRs = followerStmt.executeQuery();
+            if (followerRs.next()) {
+                user.setFollowerCount(followerRs.getInt("follower_count"));
+            }
+
+            String followingQuery = "SELECT COUNT(*) AS following_count FROM FOLLOW WHERE follow_id = ?";
+            PreparedStatement followingStmt = con.prepareStatement(followingQuery);
+            followingStmt.setString(1, userId);
+            ResultSet followingRs = followingStmt.executeQuery();
+            if (followingRs.next()) {
+                user.setFollowingCount(followingRs.getInt("following_count"));
+            }
+
+            System.out.println("Follower Count: " + user.getFollowerCount());
+            System.out.println("Following Count: " + user.getFollowingCount());
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 }

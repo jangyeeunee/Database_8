@@ -1,7 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
-
 public class TwitterUserPage extends JPanel {
     private String userId;
     private String userName;
@@ -14,9 +15,9 @@ public class TwitterUserPage extends JPanel {
         UserInfo userInfo = UserInfo.getInstance();
         this.userId = userInfo.getUserId();
         this.userName = userInfo.getUserFirstName() + " " + userInfo.getUserLastName();
-        this.followingCount = 10;  // 임시 값
-        this.followerCount = 100;  // 임시 값
-        this.isCurrentUser = true; // 현재 로그인한 사용자인지 여부 (예시)
+        this.followingCount = userInfo.getFollowingCount();
+        this.followerCount = userInfo.getFollowerCount();
+        this.isCurrentUser = true;
 
         createAndShowGUI();
     }
@@ -49,12 +50,19 @@ public class TwitterUserPage extends JPanel {
 
         topPanel.add(userInfoPanel, BorderLayout.CENTER);
 
-        if (!isCurrentUser) {
-            JButton followButton = new JButton("Follow");
-            followButton.setBackground(new Color(29, 161, 242));
-            followButton.setForeground(Color.WHITE);
-            followButton.setFont(new Font("Arial", Font.BOLD, 14));
-            topPanel.add(followButton, BorderLayout.EAST);
+        if (isCurrentUser) {
+            // Add "Edit Info" button at the top right corner
+            JButton editButton = new JButton("Edit Info");
+            editButton.setBackground(new Color(29, 161, 242));
+            editButton.setForeground(Color.WHITE);
+            editButton.setFont(new Font("Arial", Font.BOLD, 14));
+            editButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    handleEditButtonClick();
+                }
+            });
+            topPanel.add(editButton, BorderLayout.EAST);
         }
 
         add(topPanel, BorderLayout.NORTH);
@@ -98,7 +106,10 @@ public class TwitterUserPage extends JPanel {
 
         JScrollPane scrollPane = new JScrollPane(postsPanel);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
         tabPanel.add(scrollPane, BorderLayout.CENTER);
+        
 
         add(tabPanel, BorderLayout.CENTER);
 
@@ -139,5 +150,53 @@ public class TwitterUserPage extends JPanel {
 
         postsPanel.revalidate();
         postsPanel.repaint();
+    }
+    private void handleEditButtonClick() {
+        // 정보 수정 필드
+        JPasswordField newPasswordField = new JPasswordField(20); 
+        JTextField newNameField = new JTextField(UserInfo.getInstance().getUserFirstName() + " " + UserInfo.getInstance().getUserLastName());
+        JTextField newEmailField = new JTextField(UserInfo.getInstance().getUserEmail());
+        JTextField newPhoneField = new JTextField(UserInfo.getInstance().getUserPhone());
+        JTextField newBirthField = new JTextField(UserInfo.getInstance().getUserBirth());
+        JTextField newGenderField = new JTextField(UserInfo.getInstance().getUserGender());
+        
+        Object[] fields = {
+            "New Password:", newPasswordField,
+            "Name:", newNameField,
+            "Email:", newEmailField,
+            "Phone Number:", newPhoneField,
+            "Birth Date:", newBirthField,
+            "Gender:", newGenderField
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, fields, "Edit User Info", JOptionPane.OK_CANCEL_OPTION);
+
+        if (option == JOptionPane.OK_OPTION) {
+        	 String newPassword = new String(newPasswordField.getPassword()); 
+            String newName = newNameField.getText();
+            String newEmail = newEmailField.getText();
+            String newPhone = newPhoneField.getText();
+            String newBirth = newBirthField.getText();
+            String newGender = newGenderField.getText();
+
+            String[] nameParts = newName.split(" ");
+            String firstName = nameParts.length > 0 ? nameParts[0] : "";  // 첫 번째 이름
+            String lastName = nameParts.length > 1 ? nameParts[1] : "";   // 두 번째 이름
+
+            UserInfo.getInstance().setUserFirstName(firstName);
+            UserInfo.getInstance().setUserLastName(lastName);
+            UserInfo.getInstance().setUserEmail(newEmail);
+            UserInfo.getInstance().setUserPhone(newPhone);
+            UserInfo.getInstance().setUserBirth(newBirth);
+            UserInfo.getInstance().setUserGender(newGender);
+
+            dbConnect db = dbConnect.getInstance();
+            if (db.updateUserInfo(UserInfo.getInstance().getUserId(), newPassword, firstName, lastName, newEmail, newPhone, newBirth, newGender)) {
+                JOptionPane.showMessageDialog(this, "User information updated successfully!");
+                // 화면 새로고침 또는 필요한 추가 작업
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to update user information.");
+            }
+        }
     }
 }
