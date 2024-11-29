@@ -386,10 +386,12 @@ public class dbConnect {
     }
 
     public ResultSet getPostsByHashtag(String hashtag) throws SQLException {
-        String query = "SELECT user_id, content FROM post WHERE content LIKE ?";
+        ResultSet rs = null;
+        String query = "SELECT * FROM POST JOIN ( SELECT post_id FROM POST_HASHTAG WHERE hash_name = ? ) AS H ON POST.id = H.post_id";
         PreparedStatement stmt = con.prepareStatement(query);
-        stmt.setString(1, "%" + hashtag + "%");
-        return stmt.executeQuery();
+        stmt.setString(1, hashtag);
+        rs = stmt.executeQuery();
+        return rs;
     }
 
     public ResultSet getPostsByUser(String userId) throws SQLException {
@@ -398,6 +400,7 @@ public class dbConnect {
         stmt.setString(1, userId);
         return stmt.executeQuery();
     }
+
     public boolean isFollowing(String userId) throws SQLException {
         String query = "SELECT * FROM follow WHERE follow_id = ? AND followed_id = ?";
         try (PreparedStatement stmt = con.prepareStatement(query)) {
@@ -408,7 +411,6 @@ public class dbConnect {
         }
     }
 
-    // Follow/Unfollow
     public void toggleFollow(String userId) throws SQLException {
         if (isFollowing(userId)) {
             String sql = "DELETE FROM follow WHERE follow_id = ? AND followed_id = ?";
