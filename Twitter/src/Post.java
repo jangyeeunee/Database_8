@@ -8,8 +8,10 @@ public class Post extends JPanel {
     private String userId;
     private String content;
     private int id;
-    private int repost_id;
     private Timestamp createAt;
+
+    private boolean isBookmarked;
+    private boolean isLiked;
 
     private JLabel userNameLabel;
     private JLabel contentLabel;
@@ -23,7 +25,8 @@ public class Post extends JPanel {
         this.content = content;
         this.createAt = createAt;
         this.id = id;
-
+        this.isBookmarked = dbConnect.getInstance().checkisbookmarked(id);
+        this.isLiked = dbConnect.getInstance().checkisliked(id);
         comments = new ArrayList<>(); // Initialize comments list
         setupUI();
     }
@@ -81,22 +84,26 @@ public class Post extends JPanel {
         buttonsPanel.setBackground(Color.WHITE);
         buttonsPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
 
-        JButton likeButton = createIconButton("icon/likeIcon.png");
-        final boolean[] isLiked = {false};
+        JButton likeButton = createIconButton(
+                this.isLiked ? "icon/likePressed.png" : "icon/likeIcon.png"
+        );
+
         likeButton.addActionListener(e -> {
-            if (isLiked[0]) {
+            this.isLiked = !this.isLiked;
+            if (!this.isLiked) {
                 likeButton.setIcon(new ImageIcon(new ImageIcon("icon/likeIcon.png")
                         .getImage().getScaledInstance(25, 20, Image.SCALE_SMOOTH)));
                 dbConnect db = dbConnect.getInstance();
-                db.addLike(id);
+                db.delLike(id);
             } else {
                 likeButton.setIcon(new ImageIcon(new ImageIcon("icon/likePressed.png")
                         .getImage().getScaledInstance(25, 20, Image.SCALE_SMOOTH)));
+                dbConnect db = dbConnect.getInstance();
+                db.addLike(id);
             }
-            isLiked[0] = !isLiked[0];
         });
 
-        JButton repostButton = createIconButton("icon/retweetIcon.png");
+        //JButton repostButton = createIconButton("icon/retweetIcon.png");
         JButton commentButton = createIconButton("icon/commentIcon.png");
         commentButton.addActionListener(e -> {
             // Open CommentWindow to add a new comment
@@ -105,23 +112,27 @@ public class Post extends JPanel {
         });
 
 
-        JButton bookmarkButton = createIconButton("icon/bookmark.png");
-        final boolean[] isBookmarked = {false};
+        JButton bookmarkButton = createIconButton(
+                isBookmarked? "icon/pressed.png" : "icon/bookmark.png"
+        );
+
         bookmarkButton.addActionListener(e -> {
-            if (isBookmarked[0]) {
+            this.isBookmarked = !this.isBookmarked;
+            if (!this.isBookmarked) {
                 bookmarkButton.setIcon(new ImageIcon(new ImageIcon("icon/bookmark.png")
                         .getImage().getScaledInstance(25, 20, Image.SCALE_SMOOTH)));
                 dbConnect db = dbConnect.getInstance();
-                db.addBookmark(id);
+                db.delBookmark(id);
             } else {
                 bookmarkButton.setIcon(new ImageIcon(new ImageIcon("icon/Pressed.png")
                         .getImage().getScaledInstance(25, 20, Image.SCALE_SMOOTH)));
+                dbConnect db = dbConnect.getInstance();
+                db.addBookmark(id);
             }
-            isBookmarked[0] = !isBookmarked[0];
         });
 
         buttonsPanel.add(likeButton);
-        buttonsPanel.add(repostButton);
+        //buttonsPanel.add(repostButton);
         buttonsPanel.add(commentButton);
         buttonsPanel.add(bookmarkButton);
 

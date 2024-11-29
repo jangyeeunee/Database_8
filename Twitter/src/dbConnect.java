@@ -343,8 +343,22 @@ public class dbConnect {
         }
     }
 
-    public void addLike(int postId)
+    public void delBookmark(int postId)
     {
+        String query = "DELETE FROM BOOKMARK_GROUP WHERE post_id = ? and user_id = ?";
+        try{
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setInt(1,postId);
+            stmt.setString(2,UserInfo.getInstance().getUserId());
+            stmt.executeUpdate();
+
+            stmt.close();
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addLike(int postId) {
         String queryInsert = "INSERT INTO POST_LIKE (post_id, user_id) VALUES (?, ?)";
         try (PreparedStatement stmt = con.prepareStatement(queryInsert)) {
             stmt.setInt(1, postId);
@@ -354,6 +368,20 @@ public class dbConnect {
         } catch (SQLException e) {
             e.printStackTrace();
 
+        }
+    }
+
+    public void delLike(int postId) {
+        String query = "DELETE FROM POST_LIKE WHERE post_id = ? and user_id = ?";
+        try{
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setInt(1,postId);
+            stmt.setString(2,UserInfo.getInstance().getUserId());
+            stmt.executeUpdate();
+
+            stmt.close();
+        }catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -424,6 +452,7 @@ public class dbConnect {
             return false; // Error, handle exception
         }
     }
+
     public void updateFollowStats() {
         UserInfo user = UserInfo.getInstance();
         String userId = user.getUserId();
@@ -457,5 +486,35 @@ public class dbConnect {
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public boolean checkisbookmarked(int postId) {
+        ResultSet rs = null;
+        try {
+            String query = "SELECT id FROM BOOKMARK_GROUP WHERE user_id = ? and post_id = ?";
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setString(1, UserInfo.getInstance().getUserId());
+            ps.setInt(2, postId);
+            rs = ps.executeQuery();
+            return rs.next();
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean checkisliked(int postId) {
+        ResultSet rs = null;
+        try {
+            String query = "SELECT id FROM POST_LIKE WHERE user_id = ? and post_id = ?";
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setString(1, UserInfo.getInstance().getUserId());
+            ps.setInt(2, postId);
+            rs = ps.executeQuery();
+            return rs.next();
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
