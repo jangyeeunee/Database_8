@@ -3,8 +3,8 @@ import java.awt.*;
 
 public class MainFrame extends JFrame {
     private static MainFrame instance;
-    private CardLayout cardLayout;
-    private JPanel mainPanel;
+    private static CardLayout cardLayout;
+    private static JPanel mainPanel;
 
     public MainFrame() {
         setTitle("Twitter Application");
@@ -29,7 +29,7 @@ public class MainFrame extends JFrame {
         setVisible(true);
     }
 
-    public void showPage(String pageName) {
+    public static void showPage(String pageName) {
         cardLayout.show(mainPanel, pageName);
     }
 

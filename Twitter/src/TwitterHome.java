@@ -31,7 +31,7 @@ public class TwitterHome extends JPanel {
         return instance;
     }
 
-    private void displayPosts() {
+    public void displayPosts() {
         dbConnect db = dbConnect.getInstance();
         Post[] posts = db.getFollowingPost();
 
@@ -45,6 +45,8 @@ public class TwitterHome extends JPanel {
         } else {
             for (Post post : posts) {
                 if (post != null) {
+                    post.setMaximumSize(new Dimension(400, 150)); // 고정 크기 설정
+                    post.setPreferredSize(new Dimension(400, 150)); // 고정 크기 설정
                     // Add Post object to postContainer
                     postContainer.add(post);
                 }

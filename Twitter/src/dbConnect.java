@@ -45,8 +45,12 @@ public class dbConnect {
             if (flag) {
                 System.out.println(user.getUserId());
                 parentFrame.dispose();
-            } else
+            } else{
+                JOptionPane.showMessageDialog(null, "ID or password does not match");
                 parentFrame.setVisible(true);
+
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -60,7 +64,7 @@ public class dbConnect {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             String url = "jdbc:mysql://localhost:3306/TWITTER";
-            String user = "root", passwd = "tndk1008";
+            String user = "root", passwd = "wldmsdl7715";
             con = DriverManager.getConnection(url, user, passwd);
             System.out.println(con);
         } catch (SQLException | ClassNotFoundException e) {
@@ -95,6 +99,7 @@ public class dbConnect {
             pstmt.close();
             con.close();
         } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Check what you wrote !");
             ex.printStackTrace();
             System.out.println("회원가입 중 오류 발생.");
         }
@@ -125,12 +130,12 @@ public class dbConnect {
                 Timestamp createAt = rs.getTimestamp("create_at");
 
                 postList.add(new Post(postId, userId, content, createAt));
-
-                System.out.println("Post ID: " + postId);
-                System.out.println("Content: " + content);
-                System.out.println("Posted by: " + userId);
-                System.out.println("Created At: " + createAt);
-                System.out.println("------------------------");
+//                System.out.println("-----Following------");
+//                System.out.println("Post ID: " + postId);
+//                System.out.println("Content: " + content);
+//                System.out.println("Posted by: " + userId);
+//                System.out.println("Created At: " + createAt);
+//                System.out.println("------------------------");
             }
 
             return postList.toArray(new Post[0]);
@@ -147,7 +152,7 @@ public class dbConnect {
         System.out.println("getBookmarkPosts");
 
         try {
-            String followingPostQuery = " SELECT DISTINCT p.id AS post_id, p.content, p.user_id, p.create_at FROM post AS p JOIN bookmark_group AS bg ON p.id = bg.post_id WHERE bg.user_id = ?";
+            String followingPostQuery = " SELECT DISTINCT p.id AS post_id, p.content, p.user_id, p.create_at FROM post AS p JOIN bookmark_group AS bg ON p.id = bg.post_id WHERE bg.user_id = ? ORDER BY p.create_at DESC";
 
 
             PreparedStatement pstmt = con.prepareStatement(followingPostQuery);
@@ -164,11 +169,12 @@ public class dbConnect {
 
                 postList.add(new Post(postId, userId, content, createAt));
 
-                System.out.println("Post ID: " + postId);
-                System.out.println("Content: " + content);
-                System.out.println("Posted by: " + userId);
-                System.out.println("Created At: " + createAt);
-                System.out.println("------------------------");
+//                System.out.println("----BookMark----");
+//                System.out.println("Post ID: " + postId);
+//                System.out.println("Content: " + content);
+//                System.out.println("Posted by: " + userId);
+//                System.out.println("Created At: " + createAt);
+//                System.out.println("------------------------");
             }
 
             return postList.toArray(new Post[0]);
@@ -416,30 +422,52 @@ public class dbConnect {
     }
 
     public boolean updateUserInfo(String userId, String newPassword, String newFirstName, String newLastName, String newEmail, String newPhone, String newBirth, String newGender) {
-        String query = "UPDATE USER SET pwd = ?, first_name = ?, last_name = ?, email = ?, phone_number = ?, birth = ?, gender = ? WHERE id = ?";
+        String selectQuery = "SELECT pwd, first_name, last_name, email, phone_number, birth, gender FROM USER WHERE id = ?";
+        String updateQuery = "UPDATE USER SET pwd = ?, first_name = ?, last_name = ?, email = ?, phone_number = ?, birth = ?, gender = ? WHERE id = ?";
 
-        try (PreparedStatement stmt = con.prepareStatement(query)) {
-            // Set parameters in the query
-            stmt.setString(1, newPassword);
-            stmt.setString(2, newFirstName);
-            stmt.setString(3, newLastName);
-            stmt.setString(4, newEmail);
-            stmt.setString(5, newPhone);
-            stmt.setString(6, newBirth);
-            stmt.setString(7, newGender);
-            stmt.setString(8, userId);
+        try (PreparedStatement selectStmt = con.prepareStatement(selectQuery)) {
+            selectStmt.setString(1, userId);
+            ResultSet rs = selectStmt.executeQuery();
 
-            // Execute update and check if the row is updated
-            int rowsUpdated = stmt.executeUpdate();
-            if (rowsUpdated > 0) {
-                return true; // Success, user info updated
+            if (rs.next()) {
+                // 기존 데이터와 새로운 데이터 비교
+                boolean isSame = newPassword.equals(rs.getString("pwd")) &&
+                        newFirstName.equals(rs.getString("first_name")) &&
+                        newLastName.equals(rs.getString("last_name")) &&
+                        newEmail.equals(rs.getString("email")) &&
+                        newPhone.equals(rs.getString("phone_number")) &&
+                        newBirth.equals(rs.getString("birth")) &&
+                        newGender.equals(rs.getString("gender"));
+
+                if (isSame) {
+                    JOptionPane.showMessageDialog(null, "No changes detected in the user information.");
+                    return false; // 변경 사항 없음
+                }
             } else {
-                System.out.println("User not found or no changes detected.");
-                return false; // Failure, user not found or no changes
+                JOptionPane.showMessageDialog(null, "User not found.");
+                return false; // 유저 없음
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            return false; // Error, handle exception
+            return false;
+        }
+
+        // 데이터가 변경되었다면 업데이트 실행
+        try (PreparedStatement updateStmt = con.prepareStatement(updateQuery)) {
+            updateStmt.setString(1, newPassword);
+            updateStmt.setString(2, newFirstName);
+            updateStmt.setString(3, newLastName);
+            updateStmt.setString(4, newEmail);
+            updateStmt.setString(5, newPhone);
+            updateStmt.setString(6, newBirth);
+            updateStmt.setString(7, newGender);
+            updateStmt.setString(8, userId);
+
+            int rowsUpdated = updateStmt.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
