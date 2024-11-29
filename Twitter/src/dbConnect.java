@@ -212,8 +212,6 @@ public class dbConnect {
     }
 
     public void CreatePost(Map<String, String> data,JFrame parentFrame) {
-
-        Statement stmt = null;
         ResultSet rs = null;
 
         try {
@@ -243,25 +241,16 @@ public class dbConnect {
                     mapHashtag(data.get("hashtag"), postId);
                     System.out.println("post생성 성공");
                 }
-
                 pstmt.close();
-
             }
-
             parentFrame.dispose();
-
-
-
         } catch (Exception ex) {
             ex.printStackTrace();
             System.out.println("post 생성중 오류 발생.");
         }
-
-
     }
 
     public void mapHashtag(String hashtag, int id) {
-        ResultSet rs = null;
         String[] hashs = hashtag.split(", ");
         try {
             for (int i = 0; i < hashs.length; i++) {
@@ -269,10 +258,8 @@ public class dbConnect {
                 PreparedStatement pstmt = con.prepareStatement(query);
                 pstmt.setInt(1, id);
                 pstmt.setString(2, hashs[i]);
-
                 pstmt.executeUpdate();
             }
-
         } catch (SQLException e) {}
     }
 
