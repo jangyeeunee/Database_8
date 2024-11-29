@@ -37,6 +37,10 @@ public class dbConnect {
                     BottomPanel button = BottomPanel.getInstance();
                     button.homeButton.doClick(); // 홈 버튼 동작 실행
                 });
+            }else{
+                System.out.println("login failed");
+                JOptionPane.showMessageDialog(parentFrame, "Login Failed");
+                return false;
             }
             if (flag) {
                 System.out.println(user.getUserId());
@@ -44,6 +48,7 @@ public class dbConnect {
             } else{
                 JOptionPane.showMessageDialog(null, "ID or password does not match");
                 parentFrame.setVisible(true);
+
             }
 
         } catch (SQLException e) {
@@ -212,11 +217,7 @@ public class dbConnect {
         return comments; // Return the list of comments
     }
 
-
-
     public void CreatePost(Map<String, String> data,JFrame parentFrame) {
-
-        Statement stmt = null;
         ResultSet rs = null;
 
         try {
@@ -246,25 +247,16 @@ public class dbConnect {
                     mapHashtag(data.get("hashtag"), postId);
                     System.out.println("post생성 성공");
                 }
-
                 pstmt.close();
-
             }
-
             parentFrame.dispose();
-
-
-
         } catch (Exception ex) {
             ex.printStackTrace();
             System.out.println("post 생성중 오류 발생.");
         }
-
-
     }
 
     public void mapHashtag(String hashtag, int id) {
-        ResultSet rs = null;
         String[] hashs = hashtag.split(", ");
         try {
             for (int i = 0; i < hashs.length; i++) {
@@ -272,10 +264,8 @@ public class dbConnect {
                 PreparedStatement pstmt = con.prepareStatement(query);
                 pstmt.setInt(1, id);
                 pstmt.setString(2, hashs[i]);
-
                 pstmt.executeUpdate();
             }
-
         } catch (SQLException e) {}
     }
 
@@ -390,10 +380,12 @@ public class dbConnect {
     }
 
     public ResultSet getPostsByHashtag(String hashtag) throws SQLException {
-        String query = "SELECT user_id, content FROM post WHERE content LIKE ?";
+        ResultSet rs = null;
+        String query = "SELECT * FROM POST JOIN ( SELECT post_id FROM POST_HASHTAG WHERE hash_name = ? ) AS H ON POST.id = H.post_id";
         PreparedStatement stmt = con.prepareStatement(query);
-        stmt.setString(1, "%" + hashtag + "%");
-        return stmt.executeQuery();
+        stmt.setString(1, hashtag);
+        rs = stmt.executeQuery();
+        return rs;
     }
 
     public ResultSet getPostsByUser(String userId) throws SQLException {
@@ -402,6 +394,7 @@ public class dbConnect {
         stmt.setString(1, userId);
         return stmt.executeQuery();
     }
+
     public boolean isFollowing(String userId) throws SQLException {
         String query = "SELECT * FROM follow WHERE follow_id = ? AND followed_id = ?";
         try (PreparedStatement stmt = con.prepareStatement(query)) {
@@ -412,7 +405,6 @@ public class dbConnect {
         }
     }
 
-    // Follow/Unfollow
     public void toggleFollow(String userId) throws SQLException {
         if (isFollowing(userId)) {
             String sql = "DELETE FROM follow WHERE follow_id = ? AND followed_id = ?";
