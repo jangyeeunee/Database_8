@@ -37,13 +37,16 @@ public class dbConnect {
                     BottomPanel button = BottomPanel.getInstance();
                     button.homeButton.doClick(); // 홈 버튼 동작 실행
                 });
+            }else{
+                System.out.println("login failed");
+                JOptionPane.showMessageDialog(parentFrame, "Login Failed");
+                return false;
             }
             if (flag) {
                 System.out.println(user.getUserId());
                 parentFrame.dispose();
             } else
                 parentFrame.setVisible(true);
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -207,8 +210,6 @@ public class dbConnect {
         }
         return comments; // Return the list of comments
     }
-
-
 
     public void CreatePost(Map<String, String> data,JFrame parentFrame) {
 

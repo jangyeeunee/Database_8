@@ -187,11 +187,16 @@ public class twitterSignUp extends JFrame {
             data.put("gender",Gender);
 
             dbConnect db = dbConnect.getInstance();
-            if(db.SignUpDB(data,this))
+            boolean loginSuccess = db.SignUpDB(data,this);
+            System.out.println("로그인 실패");
+            System.out.println(loginSuccess);
+            if(loginSuccess) {
                 try {
                     TwitterLogin twitterLogin = new TwitterLogin();
                     dispose();
-                }catch (Exception e1) {}
+                } catch (Exception e1) {
+                }
+            }
         });
 
         // Add the main panel to the frame
