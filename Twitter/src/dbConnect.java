@@ -57,7 +57,7 @@ public class dbConnect {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             String url = "jdbc:mysql://localhost:3306/TWITTER";
-            String user = "root", passwd = "yuyu1234";
+            String user = "root", passwd = "tndk1008";
             con = DriverManager.getConnection(url, user, passwd);
             System.out.println(con);
         } catch (SQLException | ClassNotFoundException e) {
@@ -103,7 +103,7 @@ public class dbConnect {
         System.out.println("getFollowingPosts");
 
         try {
-            String followingPostQuery = "SELECT p.id AS post_id, p.content, p.user_id, p.create_at, p.repost_id " +
+            String followingPostQuery = "SELECT p.id AS post_id, p.content, p.user_id, p.create_at " +
                     "FROM post AS p " +
                     "JOIN (SELECT followed_id AS following FROM FOLLOW WHERE follow_id = ?) AS f " +
                     "ON p.user_id = f.following " +
@@ -120,9 +120,8 @@ public class dbConnect {
                 String content = rs.getString("content");
                 String userId = rs.getString("user_id");
                 Timestamp createAt = rs.getTimestamp("create_at");
-                int repostId = rs.getInt("repost_id");
 
-                postList.add(new Post(postId, userId, content, repostId, createAt));
+                postList.add(new Post(postId, userId, content, createAt));
 
                 System.out.println("Post ID: " + postId);
                 System.out.println("Content: " + content);
@@ -145,7 +144,7 @@ public class dbConnect {
         System.out.println("getBookmarkPosts");
 
         try {
-            String followingPostQuery = " SELECT DISTINCT p.id AS post_id, p.content, p.user_id, p.create_at, p.repost_id FROM post AS p JOIN bookmark_group AS bg ON p.id = bg.post_id WHERE bg.user_id = ?";
+            String followingPostQuery = " SELECT DISTINCT p.id AS post_id, p.content, p.user_id, p.create_at FROM post AS p JOIN bookmark_group AS bg ON p.id = bg.post_id WHERE bg.user_id = ?";
 
 
             PreparedStatement pstmt = con.prepareStatement(followingPostQuery);
@@ -159,9 +158,8 @@ public class dbConnect {
                 String content = rs.getString("content");
                 String userId = rs.getString("user_id");
                 Timestamp createAt = rs.getTimestamp("create_at");
-                int repostId = rs.getInt("repost_id");
 
-                postList.add(new Post(postId, userId, content, repostId, createAt));
+                postList.add(new Post(postId, userId, content, createAt));
 
                 System.out.println("Post ID: " + postId);
                 System.out.println("Content: " + content);
@@ -214,12 +212,11 @@ public class dbConnect {
 
     public void CreatePost(Map<String, String> data,JFrame parentFrame) {
 
-
         Statement stmt = null;
         ResultSet rs = null;
 
         try {
-            String query = "INSERT INTO POST(content, user_id, repost_id, create_at) VALUES (?, ?, ?, ?)";
+            String query = "INSERT INTO POST(content, user_id, create_at) VALUES (?, ?, ?)";
 
             PreparedStatement pstmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 
@@ -228,26 +225,30 @@ public class dbConnect {
             // 데이터 바인딩
             pstmt.setString(1, data.get("content"));
             pstmt.setString(2, UserInfo.getInstance().getUserId());
-            pstmt.setString(3, null);
-            pstmt.setTimestamp(4, currentTimestamp);
+            pstmt.setTimestamp(3, currentTimestamp);
 
             // 데이터베이스에 삽입
             int rowsInserted = pstmt.executeUpdate();
+            System.out.println("데베 삽입 " + rowsInserted);
 
+            if (rowsInserted > 0) {
 
-//            if (rowsInserted > 0) {
-//
-//                rs = pstmt.getGeneratedKeys();
-//
-//                //hash 테이블과 mapping
-//                if(rs.next()) {
-//                    int postId = rs.getInt(1);
-//                    mapHashtag(data.get("hashtag"), postId);
-//                    System.out.println("post생성 성공");
-//                }
-//            }
+                rs = pstmt.getGeneratedKeys();
+                if(rs.next()) {
+
+                    //hash 테이블과 mapping
+                    int postId = rs.getInt(1);
+                    pstmt.close();
+                    mapHashtag(data.get("hashtag"), postId);
+                    System.out.println("post생성 성공");
+                }
+
+                pstmt.close();
+
+            }
+
             parentFrame.dispose();
-            pstmt.close();
+
 
 
         } catch (Exception ex) {
@@ -256,7 +257,25 @@ public class dbConnect {
         }
 
 
-    }public List<Post> getUserPosts(String userId) {
+    }
+
+    public void mapHashtag(String hashtag, int id) {
+        ResultSet rs = null;
+        String[] hashs = hashtag.split(", ");
+        try {
+            for (int i = 0; i < hashs.length; i++) {
+                String query = "INSERT INTO POST_HASHTAG(post_id, hash_name) VALUES (?, ?)";
+                PreparedStatement pstmt = con.prepareStatement(query);
+                pstmt.setInt(1, id);
+                pstmt.setString(2, hashs[i]);
+
+                pstmt.executeUpdate();
+            }
+
+        } catch (SQLException e) {}
+    }
+
+    public List<Post> getUserPosts(String userId) {
         List<Post> posts = new ArrayList<>();
 
         try {
@@ -268,11 +287,10 @@ public class dbConnect {
             while (rs.next()) {
                 int postId = rs.getInt("id");
                 String content = rs.getString("content");
-                int repostId = rs.getInt("repost_id");
                 Timestamp createAt = rs.getTimestamp("create_at");
 
                 // Create Post object and add to the list
-                Post post = new Post(postId, userId, content, repostId, createAt);
+                Post post = new Post(postId, userId, content, createAt);
                 posts.add(post);
             }
         } catch (SQLException e) {
@@ -286,7 +304,7 @@ public class dbConnect {
 
         try {
             // 좋아요를 누른 포스트 가져오는 쿼리
-            String query = "SELECT p.id, p.user_id, p.content, p.repost_id, p.create_at " +
+            String query = "SELECT p.id, p.user_id, p.content, p.create_at " +
                     "FROM POST p " +
                     "JOIN POST_LIKE pl ON p.id = pl.post_id " +
                     "WHERE pl.user_id = ?";
@@ -298,11 +316,10 @@ public class dbConnect {
                 int postId = rs.getInt("id");
                 String content = rs.getString("content");
                 String postUserId = rs.getString("user_id");  // 포스트 작성자 ID
-                int repostId = rs.getInt("repost_id");
                 Timestamp createAt = rs.getTimestamp("create_at");
 
                 // Post 객체 생성 후 리스트에 추가
-                Post post = new Post(postId, postUserId, content, repostId, createAt);
+                Post post = new Post(postId, postUserId, content, createAt);
                 posts.add(post);
             }
         } catch (SQLException e) {
@@ -310,53 +327,6 @@ public class dbConnect {
         }
 
         return posts;
-    }
-
-
-
-
-    public void mapHashtag(String hashtag, int id) {
-        ResultSet rs = null;
-        String[] hashs = hashtag.split(", ");
-        int hashId = 0;
-        try {
-            for (int i = 0; i < hashs.length; i++) {
-                String query = "SELECT id FROM HASHTAG WHERE name = ?";
-                PreparedStatement pstmt = con.prepareStatement(query);
-                pstmt.setString(1, hashs[i]);
-                rs = pstmt.executeQuery();
-
-
-                if (rs.next()) {
-                    hashId = rs.getInt("id");
-                    System.out.println("hashtag: " + hashId);
-                    String query2 = "INSERT INTO POST_HASHTAG(post_id, hash_id) VALUES (?, ?)";
-                    PreparedStatement stmt = con.prepareStatement(query2);
-                    stmt.setInt(1, id);
-                    stmt.setInt(2, hashId);
-
-                    stmt.close();
-
-                } else {
-                    String query3 = "INSERT INTO HASHTAG(name) VALUES (?)";
-                    PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-                    stmt.setString(1, hashs[i]);
-                    System.out.println("hashtag: " + hashs[i]);
-
-                    ResultSet result = pstmt.getGeneratedKeys();
-
-                    String query2 = "INSERT INTO POST_HASHTAG(post_id, hash_id) VALUES (?, ?)";
-                    PreparedStatement stmt2 = con.prepareStatement(query2);
-                    stmt2.setInt(1, id);
-                    stmt2.setInt(2, result.getInt(1));
-
-                    stmt.close();
-                    stmt2.close();
-                }
-                pstmt.close();
-            }
-
-        } catch (SQLException e) {}
     }
 
     public void addBookmark(int postId)
@@ -386,6 +356,7 @@ public class dbConnect {
 
         }
     }
+
     public ResultSet getPostsByHashtag(String hashtag) throws SQLException {
         String query = "SELECT user_id, content FROM post WHERE content LIKE ?";
         PreparedStatement stmt = con.prepareStatement(query);

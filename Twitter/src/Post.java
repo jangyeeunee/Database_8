@@ -18,12 +18,11 @@ public class Post extends JPanel {
     private ArrayList<Comment> comments; // To store comments
     private JPanel commentsContainer;   // Panel for displaying comments
 
-    public Post(int id, String userId, String content, int repost_id, Timestamp createAt) {
+    public Post(int id, String userId, String content, Timestamp createAt) {
         this.userId = userId;
         this.content = content;
         this.createAt = createAt;
         this.id = id;
-        this.repost_id = repost_id;
 
         comments = new ArrayList<>(); // Initialize comments list
         setupUI();
