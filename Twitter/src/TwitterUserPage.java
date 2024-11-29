@@ -54,7 +54,7 @@ public class TwitterUserPage extends JPanel {
             // Add "Edit Info" button at the top right corner
             JButton editButton = new JButton("Edit Info");
             editButton.setBackground(new Color(29, 161, 242));
-            editButton.setForeground(Color.WHITE);
+            editButton.setForeground(Color.BLACK);
             editButton.setFont(new Font("Arial", Font.BOLD, 14));
             editButton.addActionListener(new ActionListener() {
                 @Override
@@ -143,6 +143,8 @@ public class TwitterUserPage extends JPanel {
         } else {
             for (Post post : posts) {
                 if (post != null) {
+                    post.setMaximumSize(new Dimension(400, 150)); // 고정 크기 설정
+                    post.setPreferredSize(new Dimension(400, 150)); // 고정 크기 설정
                     postsPanel.add(post);
                 }
             }

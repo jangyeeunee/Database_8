@@ -123,11 +123,13 @@ public class Post extends JPanel {
                         .getImage().getScaledInstance(25, 20, Image.SCALE_SMOOTH)));
                 dbConnect db = dbConnect.getInstance();
                 db.delBookmark(id);
+                BookmarkPage.getInstance().displayPosts();
             } else {
                 bookmarkButton.setIcon(new ImageIcon(new ImageIcon("icon/Pressed.png")
                         .getImage().getScaledInstance(25, 20, Image.SCALE_SMOOTH)));
                 dbConnect db = dbConnect.getInstance();
                 db.addBookmark(id);
+                BookmarkPage.getInstance().displayPosts();
             }
         });
 

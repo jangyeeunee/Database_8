@@ -154,6 +154,11 @@ public class TwitterSearch extends JPanel {
                 if (rs.next()) {
                     String userId = rs.getString("id");
 
+                    if(userId.equals(UserInfo.getInstance().getUserId())){
+                        JOptionPane.showMessageDialog(null, "Don't search YOU!");
+                        return;
+                    }
+
                     JPanel userPanel = new JPanel(new BorderLayout());
                     userPanel.setBackground(Color.WHITE);
                     userPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
@@ -166,10 +171,15 @@ public class TwitterSearch extends JPanel {
                     JButton followButton = new JButton("Follow");
                     followButton.setFont(new Font("Arial", Font.PLAIN, 12));
                     followButton.setPreferredSize(new Dimension(80, 30)); // 버튼 크기 설정
+
+                    boolean isCurrentlyFollowing = db.isFollowing(userId); // 현재 팔로우 상태 확인
+                    followButton.setText(isCurrentlyFollowing ? "Unfollow" : "Follow");
+
                     followButton.addActionListener(e -> {
                         try {
                             db.toggleFollow(userId);
                             followButton.setText(db.isFollowing(userId) ? "Unfollow" : "Follow");
+                            TwitterHome.getInstance().displayPosts();
                         } catch (SQLException ex) {
                             ex.printStackTrace();
                         }
@@ -193,33 +203,6 @@ public class TwitterSearch extends JPanel {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-    private void toggleFollow(Connection conn, String userId, JButton followButton) {
-        dbConnect db = dbConnect.getInstance(); // dbConnect 객체를 가져옴
-        try {
-            if (db.isFollowing(userId)) {
-                // 이미 팔로우 중인 경우 -> 언팔로우
-                db.toggleFollow(userId);  // 팔로우 해제
-                followButton.setText("Follow");
-                JOptionPane.showMessageDialog(followButton, "You have unfollowed this user.", "Notification", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                // 팔로우 중이 아닌 경우 -> 팔로우
-                db.toggleFollow(userId);  // 팔로우 추가
-                followButton.setText("Unfollow");
-                JOptionPane.showMessageDialog(followButton, "You are now following this user.", "Notification", JOptionPane.INFORMATION_MESSAGE);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        followButton.addActionListener(e -> {
-            try {
-                db.toggleFollow(userId);
-                followButton.setText(db.isFollowing(userId) ? "Unfollow" : "Follow");
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-        });
-
     }
 
     public static TwitterSearch getInstance() {
