@@ -24,7 +24,7 @@ public class TwitterUserPage extends JPanel {
         createAndShowGUI();
         updateUserInfoUI();
     }
-    
+
     private void createAndShowGUI() {
         setLayout(new BorderLayout());
 
@@ -63,14 +63,28 @@ public class TwitterUserPage extends JPanel {
 
         // Add "Edit Info" button if it's the current user
         if (isCurrentUser) {
+            // Edit Button
             JButton editButton = new JButton("Edit Info");
             editButton.setBackground(new Color(29, 161, 242));
-            editButton.setForeground(Color.BLACK);
+            editButton.setForeground(Color.WHITE);
             editButton.setFont(new Font("Arial", Font.BOLD, 14));
             editButton.addActionListener(e -> handleEditButtonClick());
-            profilePanel.add(editButton, BorderLayout.EAST);  // Position button to top-right of profilePanel
-        }
 
+            // Refresh Button
+            JButton refreshButton = new JButton("Ref");
+            refreshButton.setBackground(new Color(29, 161, 242));
+            refreshButton.setForeground(Color.WHITE);
+            refreshButton.setFont(new Font("Arial", Font.BOLD, 10));
+            refreshButton.addActionListener(e -> handleRefreshButtonClick());
+
+            // Button Panel for Edit and Refresh
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));  // FlowLayout을 사용하여 오른쪽으로 배치
+            buttonPanel.setBackground(Color.WHITE);
+            buttonPanel.add(refreshButton);  
+            buttonPanel.add(editButton);   
+            // Add buttonPanel to the EAST of profilePanel
+            profilePanel.add(buttonPanel, BorderLayout.EAST);
+        }
         // Tabs Panel
         JPanel tabPanel = new JPanel(new BorderLayout());
         tabPanel.setBackground(Color.WHITE);
@@ -115,7 +129,6 @@ public class TwitterUserPage extends JPanel {
         tabPanel.add(scrollPane, BorderLayout.CENTER);
 
         add(tabPanel, BorderLayout.CENTER);
-
     }
 
     private void loadPosts(String type) {
@@ -205,27 +218,18 @@ public class TwitterUserPage extends JPanel {
                 JOptionPane.showMessageDialog(this, "Failed to update user information or no changes detected.");
             }
         }
+
     }
 
-    public void updateUserInfoUI() {
-        UserInfo user = UserInfo.getInstance();
-        this.userName = user.getUserFirstName() + " " + user.getUserLastName();
-        this.followingCount = user.getFollowingCount();
-        this.followerCount = user.getFollowerCount();
-
-        displayNameLabel.setText(userName);
-        followingLabel.setText("Following: " + followingCount + "  |  Followers: " + followerCount);
-
-        // Follow 정보 동적 업데이트
-        updateFollowStats();
-
-        revalidate();
-        repaint();
+    private void handleRefreshButtonClick() {
+        dbConnect db = dbConnect.getInstance();
+        db.setUserInfo(userId); // 최신 정보를 가져오고 UI 갱신
+        updateUserInfoUI();
     }
 
-    // 팔로잉/팔로워 정보를 동적으로 업데이트하는 메서드
-    public void updateFollowStats() {
-        UserInfo user = UserInfo.getInstance();
-        followingLabel.setText("Following: " + user.getFollowingCount() + "  |  Followers: " + user.getFollowerCount());
+    private void updateUserInfoUI() {
+        UserInfo userInfo = UserInfo.getInstance();
+        displayNameLabel.setText(userInfo.getUserFirstName() + " " + userInfo.getUserLastName());
+        followingLabel.setText("Following: " + userInfo.getFollowingCount() + " | Followers: " + userInfo.getFollowerCount());
     }
 }
