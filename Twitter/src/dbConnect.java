@@ -30,7 +30,7 @@ public class dbConnect {
             rs = stmt.executeQuery(s1);
             if (rs.next()) {
                 user.setUserInfo(rs);
-                updateFollowStats();
+                updateFollowStats(UserInfo.getInstance().getUserId());
                 flag = true;
                 // TwitterHome 생성 후 홈 버튼 동작 호출
                 SwingUtilities.invokeLater(() -> {
@@ -62,7 +62,7 @@ public class dbConnect {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             String url = "jdbc:mysql://localhost:3306/TWITTER";
-                String user = "root", passwd = "wldmsdl7715";
+                String user = "root", passwd = "yuyu1234";
             con = DriverManager.getConnection(url, user, passwd);
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
@@ -415,7 +415,7 @@ public class dbConnect {
             stmt.setString(1, UserInfo.getInstance().getUserId());
             stmt.setString(2, userId);
             stmt.executeUpdate();
-            updateFollowStats();
+            updateFollowStats(UserInfo.getInstance().getUserId());
         }
     }
 
@@ -469,38 +469,6 @@ public class dbConnect {
         }
     }
 
-    public void updateFollowStats() {
-        UserInfo user = UserInfo.getInstance();
-        String userId = user.getUserId();
-
-        if (userId == null || userId.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "There is any User Information. Check again!");
-            return;
-        }
-
-        try {
-            // 팔로워 수 가져오기
-            String followerQuery = "SELECT COUNT(*) AS follower_count FROM FOLLOW WHERE followed_id = ?";
-            PreparedStatement followerStmt = con.prepareStatement(followerQuery);
-            followerStmt.setString(1, userId);
-            ResultSet followerRs = followerStmt.executeQuery();
-            if (followerRs.next()) {
-                user.setFollowerCount(followerRs.getInt("follower_count"));
-            }
-
-            // 팔로잉 수 가져오기
-            String followingQuery = "SELECT COUNT(*) AS following_count FROM FOLLOW WHERE follow_id = ?";
-            PreparedStatement followingStmt = con.prepareStatement(followingQuery);
-            followingStmt.setString(1, userId);
-            ResultSet followingRs = followingStmt.executeQuery();
-            if (followingRs.next()) {
-                user.setFollowingCount(followingRs.getInt("following_count"));
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
 
 
 
@@ -532,5 +500,56 @@ public class dbConnect {
             e.printStackTrace();
         }
         return false;
+        
+    }  public void setUserInfo(String userId) {
+        try {
+            // 사용자 기본 정보 가져오기
+            String query = "SELECT first_name, last_name, email, phone_number, birth, gender FROM USER WHERE id = ?";
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setString(1, userId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                // UserInfo 객체에 사용자 기본 정보 업데이트
+                UserInfo.getInstance().setUserFirstName(rs.getString("first_name"));
+                UserInfo.getInstance().setUserLastName(rs.getString("last_name"));
+                UserInfo.getInstance().setUserEmail(rs.getString("email"));
+                UserInfo.getInstance().setUserPhone(rs.getString("phone_number"));
+                UserInfo.getInstance().setUserBirth(rs.getString("birth"));
+                UserInfo.getInstance().setUserGender(rs.getString("gender"));
+            }
+
+            // 팔로잉/팔로워 수 업데이트
+            updateFollowStats(userId);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 팔로우 통계 업데이트
+    public void updateFollowStats(String userId) {
+        try {
+            // 팔로워 수 가져오기
+            String followerQuery = "SELECT COUNT(*) AS follower_count FROM FOLLOW WHERE followed_id = ?";
+            PreparedStatement followerStmt = con.prepareStatement(followerQuery);
+            followerStmt.setString(1, userId);
+            ResultSet followerRs = followerStmt.executeQuery();
+            if (followerRs.next()) {
+                UserInfo.getInstance().setFollowerCount(followerRs.getInt("follower_count"));
+            }
+
+            // 팔로잉 수 가져오기
+            String followingQuery = "SELECT COUNT(*) AS following_count FROM FOLLOW WHERE follow_id = ?";
+            PreparedStatement followingStmt = con.prepareStatement(followingQuery);
+            followingStmt.setString(1, userId);
+            ResultSet followingRs = followingStmt.executeQuery();
+            if (followingRs.next()) {
+                UserInfo.getInstance().setFollowingCount(followingRs.getInt("following_count"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
