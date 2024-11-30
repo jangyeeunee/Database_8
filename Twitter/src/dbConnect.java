@@ -31,6 +31,7 @@ public class dbConnect {
             if (rs.next()) {
                 System.out.println("login success");
                 user.setUserInfo(rs);
+                updateFollowStats();
                 flag = true;
                 // TwitterHome 생성 후 홈 버튼 동작 호출
                 SwingUtilities.invokeLater(() -> {
@@ -64,7 +65,7 @@ public class dbConnect {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             String url = "jdbc:mysql://localhost:3306/TWITTER";
-            String user = "root", passwd = "wldmsdl7715";
+            String user = "root", passwd = "yuyu1234";
             con = DriverManager.getConnection(url, user, passwd);
             System.out.println(con);
         } catch (SQLException | ClassNotFoundException e) {
@@ -269,58 +270,73 @@ public class dbConnect {
         } catch (SQLException e) {}
     }
 
-    public List<Post> getUserPosts(String userId) {
-        List<Post> posts = new ArrayList<>();
+    public Post[] getUserPosts(String userId) {
+        ResultSet rs = null;
+        System.out.println("getUserPosts");
 
         try {
-            String query = "SELECT * FROM POST WHERE user_id = ?";
-            PreparedStatement ps = con.prepareStatement(query);
-            ps.setString(1, userId);
-            ResultSet rs = ps.executeQuery();
+            String query = "SELECT p.id AS post_id, p.content, p.user_id, p.create_at " +
+                           "FROM post AS p " +
+                           "WHERE p.user_id = ? " + 
+                           "ORDER BY p.create_at DESC"; 
+
+            PreparedStatement pstmt = con.prepareStatement(query);
+            pstmt.setString(1, userId);  // 여기에 userId를 전달
+            rs = pstmt.executeQuery();
+
+            List<Post> postList = new ArrayList<>();
 
             while (rs.next()) {
-                int postId = rs.getInt("id");
+                int postId = rs.getInt("post_id");
                 String content = rs.getString("content");
+                String userIdFromDB = rs.getString("user_id");
                 Timestamp createAt = rs.getTimestamp("create_at");
 
-                // Create Post object and add to the list
-                Post post = new Post(postId, userId, content, createAt);
-                posts.add(post);
+                postList.add(new Post(postId, userIdFromDB, content, createAt));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
 
-        return posts;
+            return postList.toArray(new Post[0]);
+
+        } catch (SQLException e) {
+            System.out.println("SQL Exception: " + e.getMessage());
+            e.printStackTrace();
+            return new Post[0];
+        }
     }
-    public List<Post> getUserLikedPosts(String userId) {
-        List<Post> posts = new ArrayList<>();
+
+    public Post[] getUserLikedPosts(String userId) {
+        ResultSet rs = null;
+        System.out.println("getUserLikedPosts");
 
         try {
-            // 좋아요를 누른 포스트 가져오는 쿼리
-            String query = "SELECT p.id, p.user_id, p.content, p.create_at " +
-                    "FROM POST p " +
-                    "JOIN POST_LIKE pl ON p.id = pl.post_id " +
-                    "WHERE pl.user_id = ?";
-            PreparedStatement ps = con.prepareStatement(query);
-            ps.setString(1, userId);
-            ResultSet rs = ps.executeQuery();
+            String query = "SELECT p.id AS post_id, p.content, p.user_id, p.create_at " +
+                           "FROM post AS p " +
+                           "JOIN post_like AS pl ON p.id = pl.post_id " +
+                           "WHERE pl.user_id = ? " + 
+                           "ORDER BY p.create_at DESC"; // 좋아요한 게시물 정렬
+
+            PreparedStatement pstmt = con.prepareStatement(query);
+            pstmt.setString(1, userId); // userId를 전달
+            rs = pstmt.executeQuery();
+
+            List<Post> postList = new ArrayList<>();
 
             while (rs.next()) {
-                int postId = rs.getInt("id");
+                int postId = rs.getInt("post_id");
                 String content = rs.getString("content");
-                String postUserId = rs.getString("user_id");  // 포스트 작성자 ID
+                String userIdFromPost = rs.getString("user_id");
                 Timestamp createAt = rs.getTimestamp("create_at");
 
-                // Post 객체 생성 후 리스트에 추가
-                Post post = new Post(postId, postUserId, content, createAt);
-                posts.add(post);
+                postList.add(new Post(postId, userIdFromPost, content, createAt));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
 
-        return posts;
+            return postList.toArray(new Post[0]);
+
+        } catch (SQLException e) {
+            System.out.println("SQL Exception: " + e.getMessage());
+            e.printStackTrace();
+            return new Post[0];
+        }
     }
 
     public void addBookmark(int postId)
@@ -403,6 +419,7 @@ public class dbConnect {
             ResultSet rs = stmt.executeQuery();
             return rs.next(); // 결과가 있으면 팔로우 상태, 없으면 팔로우 안 함
         }
+        
     }
 
     public void toggleFollow(String userId) throws SQLException {
@@ -418,6 +435,7 @@ public class dbConnect {
             stmt.setString(1, UserInfo.getInstance().getUserId());
             stmt.setString(2, userId);
             stmt.executeUpdate();
+            updateFollowStats();
         }
     }
 
@@ -476,11 +494,12 @@ public class dbConnect {
         String userId = user.getUserId();
 
         if (userId == null || userId.isEmpty()) {
-            System.out.println("Login please");
+            System.out.println("유저 정보가 없습니다. 로그인 상태를 확인하세요.");
             return;
         }
 
         try {
+            // 팔로워 수 가져오기
             String followerQuery = "SELECT COUNT(*) AS follower_count FROM FOLLOW WHERE followed_id = ?";
             PreparedStatement followerStmt = con.prepareStatement(followerQuery);
             followerStmt.setString(1, userId);
@@ -489,6 +508,7 @@ public class dbConnect {
                 user.setFollowerCount(followerRs.getInt("follower_count"));
             }
 
+            // 팔로잉 수 가져오기
             String followingQuery = "SELECT COUNT(*) AS following_count FROM FOLLOW WHERE follow_id = ?";
             PreparedStatement followingStmt = con.prepareStatement(followingQuery);
             followingStmt.setString(1, userId);
@@ -501,10 +521,12 @@ public class dbConnect {
             System.out.println("Following Count: " + user.getFollowingCount());
 
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println("팔로워/팔로잉 수 업데이트 중 오류 발생: " + e.getMessage());
             e.printStackTrace();
         }
     }
+
+
 
     public boolean checkisbookmarked(int postId) {
         ResultSet rs = null;

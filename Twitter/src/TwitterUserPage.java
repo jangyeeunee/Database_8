@@ -3,13 +3,16 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.Arrays;
+
 public class TwitterUserPage extends JPanel {
     private String userId;
     private String userName;
     private int followingCount;
     private int followerCount;
     private boolean isCurrentUser;
-    private JPanel postsPanel; // 게시물 표시 패널
+    private JPanel postsPanel;
+    private JButton myPostsTab, likedPostsTab;
 
     public TwitterUserPage() {
         UserInfo userInfo = UserInfo.getInstance();
@@ -21,19 +24,21 @@ public class TwitterUserPage extends JPanel {
 
         createAndShowGUI();
     }
-
     private void createAndShowGUI() {
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
+        
+     //top   TopPanel topPanel = new TopPanel();
+     //top JPanel topPanelUI = topPanel.topPanel("User");
 
-        // Top Panel with user information
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        topPanel.setBackground(Color.WHITE);
+        // Profile Panel
+        JPanel profilePanel = new JPanel(new BorderLayout());
+        profilePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        profilePanel.setBackground(Color.WHITE);
 
-        JPanel userInfoPanel = new JPanel();
-        userInfoPanel.setLayout(new BoxLayout(userInfoPanel, BoxLayout.Y_AXIS));
-        userInfoPanel.setBackground(Color.WHITE);
+        // Profile Info Panel
+        JPanel profileInfoPanel = new JPanel();
+        profileInfoPanel.setLayout(new BoxLayout(profileInfoPanel, BoxLayout.Y_AXIS));
+        profileInfoPanel.setBackground(Color.WHITE);
 
         JLabel displayNameLabel = new JLabel(userName);
         displayNameLabel.setFont(new Font("Arial", Font.BOLD, 18));
@@ -44,30 +49,34 @@ public class TwitterUserPage extends JPanel {
         JLabel followingLabel = new JLabel("Following: " + followingCount + "  |  Followers: " + followerCount);
         followingLabel.setFont(new Font("Arial", Font.PLAIN, 14));
 
-        userInfoPanel.add(displayNameLabel);
-        userInfoPanel.add(userIdLabel);
-        userInfoPanel.add(followingLabel);
+        profileInfoPanel.add(displayNameLabel);
+        profileInfoPanel.add(userIdLabel);
+        profileInfoPanel.add(followingLabel);
 
-        topPanel.add(userInfoPanel, BorderLayout.CENTER);
+        // Add Profile Info Panel to Profile Panel
+        profilePanel.add(profileInfoPanel, BorderLayout.CENTER);
 
+        // Create main panel to hold TopPanel and ProfilePanel vertically
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBackground(Color.WHITE);
+        
+       //top mainPanel.add(topPanelUI);
+        mainPanel.add(profilePanel);
+
+        // Add mainPanel to the North of the layout (so both panels are displayed at the top)
+        add(mainPanel, BorderLayout.NORTH);
+        // Add "Edit Info" button if it's the current user
         if (isCurrentUser) {
-            // Add "Edit Info" button at the top right corner
             JButton editButton = new JButton("Edit Info");
             editButton.setBackground(new Color(29, 161, 242));
             editButton.setForeground(Color.BLACK);
             editButton.setFont(new Font("Arial", Font.BOLD, 14));
-            editButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    handleEditButtonClick();
-                }
-            });
-            topPanel.add(editButton, BorderLayout.EAST);
+            editButton.addActionListener(e -> handleEditButtonClick());
+            profilePanel.add(editButton, BorderLayout.EAST);  // Position button to top-right of profilePanel
         }
 
-        add(topPanel, BorderLayout.NORTH);
-
-        // Tabs for My Posts and Liked Posts
+        // Tabs Panel
         JPanel tabPanel = new JPanel(new BorderLayout());
         tabPanel.setBackground(Color.WHITE);
 
@@ -90,18 +99,18 @@ public class TwitterUserPage extends JPanel {
         postsPanel.setLayout(new BoxLayout(postsPanel, BoxLayout.Y_AXIS));
         postsPanel.setBackground(Color.WHITE);
 
-        // 초기 화면: My Posts를 로드
-        loadMyPosts();
+        // Initial load of My Posts
+        loadPosts("myPosts");
 
-        // Tab Switching
+        // Tab Switching Logic
         myPostsTab.addActionListener(e -> {
             postsPanel.removeAll();
-            loadMyPosts();
+            loadPosts("myPosts");
         });
 
         likedPostsTab.addActionListener(e -> {
             postsPanel.removeAll();
-            loadLikedPosts();
+            loadPosts("likedPosts");
         });
 
         JScrollPane scrollPane = new JScrollPane(postsPanel);
@@ -109,31 +118,27 @@ public class TwitterUserPage extends JPanel {
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
         tabPanel.add(scrollPane, BorderLayout.CENTER);
-        
 
         add(tabPanel, BorderLayout.CENTER);
 
-        // Bottom Panel
-        BottomPanel bottomPanel = BottomPanel.getInstance();
-        add(bottomPanel.BottomPanel(), BorderLayout.SOUTH);
     }
 
-    private void loadMyPosts() {
+    private void loadPosts(String type) {
         dbConnect db = dbConnect.getInstance();
-        List<Post> posts = db.getUserPosts(userId); // 유저의 게시물 가져오기
+        Post[] postsArray;
 
-        displayPosts(posts);
-    }
+        if (type.equals("myPosts")) {
+            postsArray = db.getUserPosts(userId); // Load user's posts
+        } else {
+            postsArray = db.getUserLikedPosts(userId); // Load liked posts
+        }
 
-    private void loadLikedPosts() {
-        dbConnect db = dbConnect.getInstance();
-        List<Post> posts = db.getUserLikedPosts(userId); // 유저가 좋아요한 게시물 가져오기
-
+        List<Post> posts = Arrays.asList(postsArray);
         displayPosts(posts);
     }
 
     private void displayPosts(List<Post> posts) {
-        postsPanel.removeAll(); // 기존 게시물 제거
+        postsPanel.removeAll(); // Clear previous posts
 
         if (posts == null || posts.isEmpty()) {
             JLabel noPostsLabel = new JLabel("No posts found.");
@@ -143,8 +148,6 @@ public class TwitterUserPage extends JPanel {
         } else {
             for (Post post : posts) {
                 if (post != null) {
-                    post.setMaximumSize(new Dimension(400, 150)); // 고정 크기 설정
-                    post.setPreferredSize(new Dimension(400, 150)); // 고정 크기 설정
                     postsPanel.add(post);
                 }
             }
@@ -153,8 +156,14 @@ public class TwitterUserPage extends JPanel {
         postsPanel.revalidate();
         postsPanel.repaint();
     }
+
+    private void setActiveTab(JButton activeTab, JButton inactiveTab) {
+        activeTab.setBackground(new Color(29, 161, 242));
+        inactiveTab.setBackground(Color.WHITE);
+    }
+
     private void handleEditButtonClick() {
-        // 정보 수정 필드
+        // Info edit fields (same as before)
         JPasswordField newPasswordField = new JPasswordField(20); 
         JTextField newNameField = new JTextField(UserInfo.getInstance().getUserFirstName() + " " + UserInfo.getInstance().getUserLastName());
         JTextField newEmailField = new JTextField(UserInfo.getInstance().getUserEmail());
@@ -174,7 +183,7 @@ public class TwitterUserPage extends JPanel {
         int option = JOptionPane.showConfirmDialog(this, fields, "Edit User Info", JOptionPane.OK_CANCEL_OPTION);
 
         if (option == JOptionPane.OK_OPTION) {
-        	 String newPassword = new String(newPasswordField.getPassword()); 
+            String newPassword = new String(newPasswordField.getPassword()); 
             String newName = newNameField.getText();
             String newEmail = newEmailField.getText();
             String newPhone = newPhoneField.getText();
@@ -182,8 +191,8 @@ public class TwitterUserPage extends JPanel {
             String newGender = newGenderField.getText();
 
             String[] nameParts = newName.split(" ");
-            String firstName = nameParts.length > 0 ? nameParts[0] : "";  // 첫 번째 이름
-            String lastName = nameParts.length > 1 ? nameParts[1] : "";   // 두 번째 이름
+            String firstName = nameParts.length > 0 ? nameParts[0] : "";  // First name
+            String lastName = nameParts.length > 1 ? nameParts[1] : "";   // Last name
 
             UserInfo.getInstance().setUserFirstName(firstName);
             UserInfo.getInstance().setUserLastName(lastName);
@@ -195,7 +204,6 @@ public class TwitterUserPage extends JPanel {
             dbConnect db = dbConnect.getInstance();
             if (db.updateUserInfo(UserInfo.getInstance().getUserId(), newPassword, firstName, lastName, newEmail, newPhone, newBirth, newGender)) {
                 JOptionPane.showMessageDialog(this, "User information updated successfully!");
-                // 화면 새로고침 또는 필요한 추가 작업
             } else {
                 JOptionPane.showMessageDialog(this, "Failed to update user information.");
             }
