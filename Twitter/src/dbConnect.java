@@ -62,7 +62,7 @@ public class dbConnect {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             String url = "jdbc:mysql://localhost:3306/TWITTER";
-                String user = "root", passwd = "yuyu1234";
+                String user = "root", passwd = "wldmsdl7715";
             con = DriverManager.getConnection(url, user, passwd);
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
@@ -169,7 +169,7 @@ public class dbConnect {
     }
 
     public boolean addComment(String userId, int postId, String comment) {
-        String query = "INSERT INTO COMMENT (user_id, post_id, comment) VALUES (?, ?, ?) ORDER BY id DESC";
+        String query = "INSERT INTO COMMENT (user_id, post_id, comment) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = con.prepareStatement(query)) {
             stmt.setString(1,userId);
             stmt.setInt(2, postId);
