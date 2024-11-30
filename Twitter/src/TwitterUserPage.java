@@ -11,7 +11,7 @@ public class TwitterUserPage extends JPanel {
     private int followingCount;
     private int followerCount;
     private boolean isCurrentUser;
-    private JPanel postsPanel; // 게시물 표시 패널
+    private JPanel postsPanel;
     private JButton myPostsTab, likedPostsTab;
 
     public TwitterUserPage() {
@@ -24,14 +24,11 @@ public class TwitterUserPage extends JPanel {
 
         createAndShowGUI();
     }
-
     private void createAndShowGUI() {
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
-
-        // TopPanel (for title or header)
-       //top TopPanel topPanel = new TopPanel();
-      //top  JPanel topPanelUI = topPanel.topPanel("User");
+        
+     //top   TopPanel topPanel = new TopPanel();
+     //top JPanel topPanelUI = topPanel.topPanel("User");
 
         // Profile Panel
         JPanel profilePanel = new JPanel(new BorderLayout());
@@ -63,14 +60,12 @@ public class TwitterUserPage extends JPanel {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBackground(Color.WHITE);
-
-        // Add TopPanel and ProfilePanel to mainPanel
+        
        //top mainPanel.add(topPanelUI);
         mainPanel.add(profilePanel);
 
         // Add mainPanel to the North of the layout (so both panels are displayed at the top)
         add(mainPanel, BorderLayout.NORTH);
-
         // Add "Edit Info" button if it's the current user
         if (isCurrentUser) {
             JButton editButton = new JButton("Edit Info");
@@ -81,38 +76,69 @@ public class TwitterUserPage extends JPanel {
             profilePanel.add(editButton, BorderLayout.EAST);  // Position button to top-right of profilePanel
         }
 
-        // Posts Panel (directly add scrollPane)
+        // Tabs Panel
+        JPanel tabPanel = new JPanel(new BorderLayout());
+        tabPanel.setBackground(Color.WHITE);
+
+        JPanel tabButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JButton myPostsTab = new JButton("My Posts");
+        JButton likedPostsTab = new JButton("Liked Posts");
+
+        for (JButton tab : new JButton[]{myPostsTab, likedPostsTab}) {
+            tab.setBackground(Color.WHITE);
+            tab.setForeground(new Color(29, 161, 242));
+            tab.setFont(new Font("Arial", Font.BOLD, 14));
+            tab.setFocusPainted(false);
+        }
+
+        tabButtonsPanel.add(myPostsTab);
+        tabButtonsPanel.add(likedPostsTab);
+        tabPanel.add(tabButtonsPanel, BorderLayout.NORTH);
+
         postsPanel = new JPanel();
         postsPanel.setLayout(new BoxLayout(postsPanel, BoxLayout.Y_AXIS));
         postsPanel.setBackground(Color.WHITE);
 
-        // Load "My Posts" initially
+        // Initial load of My Posts
         loadPosts("myPosts");
 
-        // ScrollPane for posts
+        // Tab Switching Logic
+        myPostsTab.addActionListener(e -> {
+            postsPanel.removeAll();
+            loadPosts("myPosts");
+        });
+
+        likedPostsTab.addActionListener(e -> {
+            postsPanel.removeAll();
+            loadPosts("likedPosts");
+        });
+
         JScrollPane scrollPane = new JScrollPane(postsPanel);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
-        // Add scrollPane to main layout (center section)
-        add(scrollPane, BorderLayout.CENTER);
+        tabPanel.add(scrollPane, BorderLayout.CENTER);
+
+        add(tabPanel, BorderLayout.CENTER);
 
     }
-
 
     private void loadPosts(String type) {
         dbConnect db = dbConnect.getInstance();
-        // type에 따라 사용자의 게시물 또는 좋아요한 게시물 가져오기
-        Post[] postsArray = (type.equals("myPosts")) 
-            ? db.getUserPosts(userId) // Load user's posts
-            : db.getUserLikedPosts(userId); // Load liked posts
+        Post[] postsArray;
+
+        if (type.equals("myPosts")) {
+            postsArray = db.getUserPosts(userId); // Load user's posts
+        } else {
+            postsArray = db.getUserLikedPosts(userId); // Load liked posts
+        }
 
         List<Post> posts = Arrays.asList(postsArray);
-
         displayPosts(posts);
     }
+
     private void displayPosts(List<Post> posts) {
-        postsPanel.removeAll(); // Clear existing posts
+        postsPanel.removeAll(); // Clear previous posts
 
         if (posts == null || posts.isEmpty()) {
             JLabel noPostsLabel = new JLabel("No posts found.");
@@ -122,8 +148,6 @@ public class TwitterUserPage extends JPanel {
         } else {
             for (Post post : posts) {
                 if (post != null) {
-                    post.setMaximumSize(new Dimension(400, 150)); // Fixed size
-                    post.setPreferredSize(new Dimension(400, 150)); // Fixed size
                     postsPanel.add(post);
                 }
             }
