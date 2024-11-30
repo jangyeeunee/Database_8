@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
 
+
 public class TwitterSearch extends JPanel {
     private static TwitterSearch instance;
     private CardLayout cardLayout;
@@ -117,38 +118,16 @@ public class TwitterSearch extends JPanel {
         }
 
         dbConnect db = dbConnect.getInstance();
-
         try {
             resultPanel.removeAll();
 
             if (query.startsWith("#")) {
                 // Hashtag search
-                ResultSet rs = db.getPostsByHashtag(query);
-                while (rs.next()) {
-                    String userId = rs.getString("user_id");
-                    String content = rs.getString("content");
+                Post[] posts = db.getPostsByHashtag(query); // Adjusted to return a List<Post>
 
-                    JPanel postPanel = new JPanel(new BorderLayout());
-                    postPanel.setBackground(Color.WHITE);
-                    postPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-                    postPanel.setMaximumSize(new Dimension(600, 80));
+                displayPosts(posts); // Use the displayPosts method to show the posts
 
-                    JLabel userLabel = new JLabel("User: " + userId);
-                    userLabel.setFont(new Font("Arial", Font.BOLD, 12));
-                    userLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-
-                    JLabel contentLabel = new JLabel("<html>" + content + "</html>");
-                    contentLabel.setFont(new Font("Arial", Font.PLAIN, 12));
-                    contentLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-
-                    postPanel.add(userLabel, BorderLayout.NORTH);
-                    postPanel.add(contentLabel, BorderLayout.CENTER);
-
-                    resultPanel.add(postPanel);
-                    resultPanel.add(Box.createVerticalStrut(10));
-                }
-            }
-            else if (query.startsWith("@")) {
+            } else if (query.startsWith("@")) {
                 // User ID search
                 ResultSet rs = db.getPostsByUser(query.substring(1)); // Remove "@" from query
                 if (rs.next()) {
@@ -158,7 +137,6 @@ public class TwitterSearch extends JPanel {
                         JOptionPane.showMessageDialog(null, "Don't search YOU!");
                         return;
                     }
-
                     JPanel userPanel = new JPanel(new BorderLayout());
                     userPanel.setBackground(Color.WHITE);
                     userPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
@@ -203,6 +181,28 @@ public class TwitterSearch extends JPanel {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    private void displayPosts(Post[] posts) {
+        resultPanel.removeAll(); // Clear previous posts
+
+        if (posts == null ) {
+            JLabel noPostsLabel = new JLabel("No posts found.");
+            noPostsLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+            noPostsLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            resultPanel.add(noPostsLabel);
+        } else {
+            for (Post post : posts) {
+                if (post != null) {
+                    post.setMaximumSize(new Dimension(400, 150)); // 고정 크기 설정
+                    post.setPreferredSize(new Dimension(400, 150)); // 고정 크기 설정
+                    resultPanel.add(post);
+                }
+            }
+        }
+
+        resultPanel.revalidate();
+        resultPanel.repaint();
     }
 
     public static TwitterSearch getInstance() {
