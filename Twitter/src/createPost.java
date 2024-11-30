@@ -9,7 +9,7 @@ public class createPost extends JFrame {
 
     public createPost() {
         Map<String, String> data = new HashMap<>();
-        setTitle("Add Comment");
+        setTitle("Add Post");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());

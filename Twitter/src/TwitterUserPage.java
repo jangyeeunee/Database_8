@@ -66,14 +66,14 @@ public class TwitterUserPage extends JPanel {
             // Edit Button
             JButton editButton = new JButton("Edit Info");
             editButton.setBackground(new Color(29, 161, 242));
-            editButton.setForeground(Color.WHITE);
+            editButton.setForeground(Color.BLACK);
             editButton.setFont(new Font("Arial", Font.BOLD, 14));
             editButton.addActionListener(e -> handleEditButtonClick());
 
             // Refresh Button
-            JButton refreshButton = new JButton("Ref");
+            JButton refreshButton = new JButton("Refresh");
             refreshButton.setBackground(new Color(29, 161, 242));
-            refreshButton.setForeground(Color.WHITE);
+            refreshButton.setForeground(Color.BLACK);
             refreshButton.setFont(new Font("Arial", Font.BOLD, 10));
             refreshButton.addActionListener(e -> handleRefreshButtonClick());
 
