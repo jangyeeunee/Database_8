@@ -3,6 +3,7 @@ import java.awt.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Post extends JPanel {
     private String userId;
@@ -166,8 +167,8 @@ public class Post extends JPanel {
 
 
     // Method to add a comment and update the UI
-    public void addComment(String commentText) {
-        Comment newComment = new Comment(commentText); // Create a new comment
+    public void addComment(String commenter, String commentText) {
+        Comment newComment = new Comment(commenter, commentText); // Create a new comment
         comments.add(newComment); // Add to comments list
 
         // Create a panel for the new comment
@@ -194,10 +195,20 @@ public class Post extends JPanel {
 
     void updateComments() {
         commentsContainer.removeAll(); // 기존 댓글 제거
-        List<String> comments = dbConnect.getInstance().getCommentsByPostId(id); // 현재 포스트의 댓글 가져오기
-        for (String comment : comments) {
-            addComment(comment);
+
+        // 댓글과 작성자 정보를 가져옴
+        List<Map<String, String>> comments = dbConnect.getInstance().getCommentsWithUsers(id);
+
+        // 각 댓글 정보를 UI에 추가
+        for (Map<String, String> commentData : comments) {
+            String commenter = commentData.get("user_id"); // 작성자
+            String commentText = commentData.get("comment"); // 댓글 내용
+
+            addComment(commenter, commentText); // 댓글 추가 메서드 호출
         }
+
+        commentsContainer.revalidate(); // 레이아웃 다시 계산
+        commentsContainer.repaint();    // 화면 다시 그리기
     }
 
     private JButton createIconButton(String iconPath) {
@@ -216,8 +227,8 @@ public class Post extends JPanel {
         private String commenter;
         private String text;
 
-        public Comment(String text) {
-            this.commenter = UserInfo.getInstance().getUserId();
+        public Comment(String commenter, String text) {
+            this.commenter = commenter;
             this.text = text;
         }
 
@@ -230,3 +241,4 @@ public class Post extends JPanel {
         }
     }
 }
+

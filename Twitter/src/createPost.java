@@ -6,10 +6,6 @@ import java.util.Map;
 
 public class createPost extends JFrame {
     private static createPost createpost;
-    private String userId;
-    private String content;
-    private int repost_id;
-    private Timestamp createAt;
 
     public createPost() {
         Map<String, String> data = new HashMap<>();

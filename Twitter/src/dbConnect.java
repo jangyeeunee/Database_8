@@ -29,7 +29,6 @@ public class dbConnect {
             String s1 = "select * from user where id = \"" + Id + "\" and pwd = \"" + Password + "\"";
             rs = stmt.executeQuery(s1);
             if (rs.next()) {
-                System.out.println("login success");
                 user.setUserInfo(rs);
                 updateFollowStats();
                 flag = true;
@@ -39,12 +38,10 @@ public class dbConnect {
                     button.homeButton.doClick(); // 홈 버튼 동작 실행
                 });
             }else{
-                System.out.println("login failed");
                 JOptionPane.showMessageDialog(parentFrame, "Login Failed");
                 return false;
             }
             if (flag) {
-                System.out.println(user.getUserId());
                 parentFrame.dispose();
             } else{
                 JOptionPane.showMessageDialog(null, "ID or password does not match");
@@ -65,9 +62,8 @@ public class dbConnect {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             String url = "jdbc:mysql://localhost:3306/TWITTER";
-            String user = "root", passwd = "yuyu1234";
+                String user = "root", passwd = "wldmsdl7715";
             con = DriverManager.getConnection(url, user, passwd);
-            System.out.println(con);
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -93,7 +89,7 @@ public class dbConnect {
             // 데이터베이스에 삽입
             int rowsInserted = pstmt.executeUpdate();
             if (rowsInserted > 0) {
-                System.out.println("회원가입 성공!");
+                JOptionPane.showMessageDialog(null,"Success to Sign up!");
                 return true;
             }
 
@@ -102,14 +98,12 @@ public class dbConnect {
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Check what you wrote !");
             ex.printStackTrace();
-            System.out.println("회원가입 중 오류 발생.");
         }
         return false;
     }
 
     public Post[] getFollowingPost() {
         ResultSet rs = null;
-        System.out.println("getFollowingPosts");
 
         try {
             String followingPostQuery = "SELECT p.id AS post_id, p.content, p.user_id, p.create_at " +
@@ -131,12 +125,6 @@ public class dbConnect {
                 Timestamp createAt = rs.getTimestamp("create_at");
 
                 postList.add(new Post(postId, userId, content, createAt));
-//                System.out.println("-----Following------");
-//                System.out.println("Post ID: " + postId);
-//                System.out.println("Content: " + content);
-//                System.out.println("Posted by: " + userId);
-//                System.out.println("Created At: " + createAt);
-//                System.out.println("------------------------");
             }
 
             return postList.toArray(new Post[0]);
@@ -150,7 +138,6 @@ public class dbConnect {
 
     public Post[] getBookmarkPost() {
         ResultSet rs = null;
-        System.out.println("getBookmarkPosts");
 
         try {
             String followingPostQuery = " SELECT DISTINCT p.id AS post_id, p.content, p.user_id, p.create_at FROM post AS p JOIN bookmark_group AS bg ON p.id = bg.post_id WHERE bg.user_id = ? ORDER BY p.create_at DESC";
@@ -170,12 +157,6 @@ public class dbConnect {
 
                 postList.add(new Post(postId, userId, content, createAt));
 
-//                System.out.println("----BookMark----");
-//                System.out.println("Post ID: " + postId);
-//                System.out.println("Content: " + content);
-//                System.out.println("Posted by: " + userId);
-//                System.out.println("Created At: " + createAt);
-//                System.out.println("------------------------");
             }
 
             return postList.toArray(new Post[0]);
@@ -187,11 +168,12 @@ public class dbConnect {
         }
     }
 
-    public boolean addComment(int postId, String comment) {
-        String query = "INSERT INTO COMMENT (post_id, comment) VALUES (?, ?)";
+    public boolean addComment(String userId, int postId, String comment) {
+        String query = "INSERT INTO COMMENT (user_id, post_id, comment) VALUES (?, ?, ?) ORDER BY id DESC";
         try (PreparedStatement stmt = con.prepareStatement(query)) {
-            stmt.setInt(1, postId);
-            stmt.setString(2, comment);
+            stmt.setString(1,userId);
+            stmt.setInt(2, postId);
+            stmt.setString(3, comment);
             stmt.executeUpdate();
             return true; // Success
         } catch (SQLException e) {
@@ -200,24 +182,27 @@ public class dbConnect {
         }
     }
 
-    public List<String> getCommentsByPostId(int postId) {
-        String query = "SELECT comment FROM COMMENT WHERE post_id = ?";
-        List<String> comments = new ArrayList<>();
+    public List<Map<String, String>> getCommentsWithUsers(int postId) {
+        String query = "SELECT user_id, comment FROM COMMENT WHERE post_id = ?";
+        List<Map<String, String>> comments = new ArrayList<>();
+
         try (PreparedStatement stmt = con.prepareStatement(query)) {
             stmt.setInt(1, postId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    comments.add(rs.getString("comment"));
+                    // 각 댓글에 대한 정보를 저장할 Map 생성
+                    Map<String, String> commentData = new HashMap<>();
+                    commentData.put("user_id", rs.getString("user_id")); // 작성자 ID
+                    commentData.put("comment", rs.getString("comment")); // 댓글 내용
+                    comments.add(commentData); // List에 추가
                 }
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
-
         }
-        return comments; // Return the list of comments
-    }
 
+        return comments; // 댓글 목록 반환
+    }
     public void CreatePost(Map<String, String> data,JFrame parentFrame) {
         ResultSet rs = null;
 
@@ -235,7 +220,6 @@ public class dbConnect {
 
             // 데이터베이스에 삽입
             int rowsInserted = pstmt.executeUpdate();
-            System.out.println("데베 삽입 " + rowsInserted);
 
             if (rowsInserted > 0) {
 
@@ -246,14 +230,12 @@ public class dbConnect {
                     int postId = rs.getInt(1);
                     pstmt.close();
                     mapHashtag(data.get("hashtag"), postId);
-                    System.out.println("post생성 성공");
                 }
                 pstmt.close();
             }
             parentFrame.dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.out.println("post 생성중 오류 발생.");
         }
     }
 
@@ -272,7 +254,6 @@ public class dbConnect {
 
     public Post[] getUserPosts(String userId) {
         ResultSet rs = null;
-        System.out.println("getUserPosts");
 
         try {
             String query = "SELECT p.id AS post_id, p.content, p.user_id, p.create_at " +
@@ -306,7 +287,6 @@ public class dbConnect {
 
     public Post[] getUserLikedPosts(String userId) {
         ResultSet rs = null;
-        System.out.println("getUserLikedPosts");
 
         try {
             String query = "SELECT p.id AS post_id, p.content, p.user_id, p.create_at " +
@@ -494,7 +474,7 @@ public class dbConnect {
         String userId = user.getUserId();
 
         if (userId == null || userId.isEmpty()) {
-            System.out.println("유저 정보가 없습니다. 로그인 상태를 확인하세요.");
+            JOptionPane.showMessageDialog(null, "There is any User Information. Check again!");
             return;
         }
 
@@ -517,11 +497,7 @@ public class dbConnect {
                 user.setFollowingCount(followingRs.getInt("following_count"));
             }
 
-            System.out.println("Follower Count: " + user.getFollowerCount());
-            System.out.println("Following Count: " + user.getFollowingCount());
-
         } catch (SQLException e) {
-            System.out.println("팔로워/팔로잉 수 업데이트 중 오류 발생: " + e.getMessage());
             e.printStackTrace();
         }
     }

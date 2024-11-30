@@ -48,7 +48,6 @@ public class TopPanel extends JPanel {
 
         // Add label
         label.setText(labelText); // Dynamic text based on input
-        System.out.println("Label text set to: " + label.getText()); // Debugging
         labelPanel.add(label); // Add label to labelPanel
         panel.add(labelPanel, BorderLayout.SOUTH); // Add labelPanel to panel
 

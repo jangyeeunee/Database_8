@@ -188,8 +188,6 @@ public class twitterSignUp extends JFrame {
 
             dbConnect db = dbConnect.getInstance();
             boolean loginSuccess = db.SignUpDB(data,this);
-            System.out.println("로그인 실패");
-            System.out.println(loginSuccess);
             if(loginSuccess) {
                 try {
                     TwitterLogin twitterLogin = new TwitterLogin();

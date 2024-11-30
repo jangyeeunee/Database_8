@@ -12,7 +12,6 @@ public class TwitterUserPage extends JPanel {
     private int followerCount;
     private boolean isCurrentUser;
     private JPanel postsPanel;
-    private JButton myPostsTab, likedPostsTab;
 
     public TwitterUserPage() {
         UserInfo userInfo = UserInfo.getInstance();
@@ -148,6 +147,8 @@ public class TwitterUserPage extends JPanel {
         } else {
             for (Post post : posts) {
                 if (post != null) {
+                    post.setMaximumSize(new Dimension(400, 150)); // 고정 크기 설정
+                    post.setPreferredSize(new Dimension(400, 150)); // 고정 크기 설정
                     postsPanel.add(post);
                 }
             }
@@ -155,11 +156,6 @@ public class TwitterUserPage extends JPanel {
 
         postsPanel.revalidate();
         postsPanel.repaint();
-    }
-
-    private void setActiveTab(JButton activeTab, JButton inactiveTab) {
-        activeTab.setBackground(new Color(29, 161, 242));
-        inactiveTab.setBackground(Color.WHITE);
     }
 
     private void handleEditButtonClick() {

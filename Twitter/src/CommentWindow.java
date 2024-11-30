@@ -35,7 +35,7 @@ public class CommentWindow extends JFrame {
                 if (!commentText.isEmpty()) {
                     // Call DB function to add comment
                     dbConnect db = dbConnect.getInstance();
-                    boolean success = db.addComment(postId, commentText); // Add comment to DB
+                    boolean success = db.addComment(UserInfo.getInstance().getUserId(), postId, commentText); // Add comment to DB
                     if (success) {
                         JOptionPane.showMessageDialog(CommentWindow.this, "Comment added successfully!");
                         post.updateComments(); // Post UI update

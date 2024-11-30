@@ -80,7 +80,6 @@ public class TwitterLogin extends JFrame {
             db.loginDB( id, password, this);
         });
 
-        //Add action listener for sign-up links >> 수정할 필요가 있음.
         signUp.addMouseListener(new MouseAdapter() {
                                     @Override
                                     public void mouseClicked(MouseEvent e) {
