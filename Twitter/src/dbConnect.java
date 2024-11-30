@@ -375,13 +375,32 @@ public class dbConnect {
         }
     }
 
-    public ResultSet getPostsByHashtag(String hashtag) throws SQLException {
+    public Post[] getPostsByHashtag(String hashtag) throws SQLException {
+        String query = "SELECT * FROM POST JOIN ( SELECT post_id FROM POST_HASHTAG WHERE hash_name LIKE ? ) AS H ON POST.id = H.post_id";
+
         ResultSet rs = null;
-        String query = "SELECT * FROM POST JOIN ( SELECT post_id FROM POST_HASHTAG WHERE hash_name = ? ) AS H ON POST.id = H.post_id";
-        PreparedStatement stmt = con.prepareStatement(query);
-        stmt.setString(1, hashtag);
-        rs = stmt.executeQuery();
-        return rs;
+
+        try (PreparedStatement pstmt = con.prepareStatement(query)) {
+            pstmt.setString(1, "%" + hashtag + "%");
+            rs = pstmt.executeQuery();
+
+            List<Post> postList = new ArrayList<>();
+
+            while (rs.next()) {
+                int postId = rs.getInt("post_id");
+                String content = rs.getString("content");
+                String userIdFromDB = rs.getString("user_id");
+                Timestamp createAt = rs.getTimestamp("create_at");
+
+                postList.add(new Post(postId, userIdFromDB, content, createAt));
+            }
+
+            return postList.toArray(new Post[0]);
+        } catch (SQLException e) {
+            System.out.println("SQL Exception: " + e.getMessage());
+            e.printStackTrace();
+            return new Post[0];
+        }
     }
 
     public ResultSet getPostsByUser(String userId) throws SQLException {
