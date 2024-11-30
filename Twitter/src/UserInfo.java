@@ -111,4 +111,8 @@ public class UserInfo {
         this.userBirth = rs.getString("birth");
         this.userGender = rs.getString("gender");
     }
+    public void updateUserInfoFromDb(String userId) {
+        dbConnect db = dbConnect.getInstance();
+        db.setUserInfo(userId);  // DB에서 사용자 정보 가져오기
+    }
 }
