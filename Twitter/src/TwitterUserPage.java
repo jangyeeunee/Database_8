@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.Arrays;
-
 public class TwitterUserPage extends JPanel {
     private String userId;
     private String userName;
@@ -12,6 +11,8 @@ public class TwitterUserPage extends JPanel {
     private int followerCount;
     private boolean isCurrentUser;
     private JPanel postsPanel;
+    private JLabel displayNameLabel;
+    private JLabel followingLabel;
 
     public TwitterUserPage() {
         UserInfo userInfo = UserInfo.getInstance();
@@ -20,51 +21,46 @@ public class TwitterUserPage extends JPanel {
         this.followingCount = userInfo.getFollowingCount();
         this.followerCount = userInfo.getFollowerCount();
         this.isCurrentUser = true;
-
         createAndShowGUI();
+        updateUserInfoUI();
     }
+    
     private void createAndShowGUI() {
         setLayout(new BorderLayout());
-        
-     //top   TopPanel topPanel = new TopPanel();
-     //top JPanel topPanelUI = topPanel.topPanel("User");
-
-        // Profile Panel
-        JPanel profilePanel = new JPanel(new BorderLayout());
-        profilePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        profilePanel.setBackground(Color.WHITE);
 
         // Profile Info Panel
         JPanel profileInfoPanel = new JPanel();
         profileInfoPanel.setLayout(new BoxLayout(profileInfoPanel, BoxLayout.Y_AXIS));
         profileInfoPanel.setBackground(Color.WHITE);
 
-        JLabel displayNameLabel = new JLabel(userName);
+        displayNameLabel = new JLabel(userName);
         displayNameLabel.setFont(new Font("Arial", Font.BOLD, 18));
+
         JLabel userIdLabel = new JLabel("@" + userId);
         userIdLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         userIdLabel.setForeground(Color.GRAY);
 
-        JLabel followingLabel = new JLabel("Following: " + followingCount + "  |  Followers: " + followerCount);
+        followingLabel = new JLabel("Following: " + followingCount + "  |  Followers: " + followerCount);
         followingLabel.setFont(new Font("Arial", Font.PLAIN, 14));
 
         profileInfoPanel.add(displayNameLabel);
         profileInfoPanel.add(userIdLabel);
         profileInfoPanel.add(followingLabel);
 
-        // Add Profile Info Panel to Profile Panel
+        // Profile Panel
+        JPanel profilePanel = new JPanel(new BorderLayout());
+        profilePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        profilePanel.setBackground(Color.WHITE);
         profilePanel.add(profileInfoPanel, BorderLayout.CENTER);
 
-        // Create main panel to hold TopPanel and ProfilePanel vertically
+        // Add Profile Panel to the top of the layout
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBackground(Color.WHITE);
-        
-       //top mainPanel.add(topPanelUI);
         mainPanel.add(profilePanel);
 
-        // Add mainPanel to the North of the layout (so both panels are displayed at the top)
         add(mainPanel, BorderLayout.NORTH);
+
         // Add "Edit Info" button if it's the current user
         if (isCurrentUser) {
             JButton editButton = new JButton("Edit Info");
@@ -159,14 +155,14 @@ public class TwitterUserPage extends JPanel {
     }
 
     private void handleEditButtonClick() {
-        // Info edit fields (same as before)
+        // 기존 코드
         JPasswordField newPasswordField = new JPasswordField(20); 
         JTextField newNameField = new JTextField(UserInfo.getInstance().getUserFirstName() + " " + UserInfo.getInstance().getUserLastName());
         JTextField newEmailField = new JTextField(UserInfo.getInstance().getUserEmail());
         JTextField newPhoneField = new JTextField(UserInfo.getInstance().getUserPhone());
         JTextField newBirthField = new JTextField(UserInfo.getInstance().getUserBirth());
         JTextField newGenderField = new JTextField(UserInfo.getInstance().getUserGender());
-        
+
         Object[] fields = {
             "New Password:", newPasswordField,
             "Name:", newNameField,
@@ -190,19 +186,46 @@ public class TwitterUserPage extends JPanel {
             String firstName = nameParts.length > 0 ? nameParts[0] : "";  // First name
             String lastName = nameParts.length > 1 ? nameParts[1] : "";   // Last name
 
-            UserInfo.getInstance().setUserFirstName(firstName);
-            UserInfo.getInstance().setUserLastName(lastName);
-            UserInfo.getInstance().setUserEmail(newEmail);
-            UserInfo.getInstance().setUserPhone(newPhone);
-            UserInfo.getInstance().setUserBirth(newBirth);
-            UserInfo.getInstance().setUserGender(newGender);
-
             dbConnect db = dbConnect.getInstance();
-            if (db.updateUserInfo(UserInfo.getInstance().getUserId(), newPassword, firstName, lastName, newEmail, newPhone, newBirth, newGender)) {
+            boolean isUpdated = db.updateUserInfo(userId, newPassword, firstName, lastName, newEmail, newPhone, newBirth, newGender);
+
+            if (isUpdated) {
+                UserInfo.getInstance().setUserFirstName(firstName);
+                UserInfo.getInstance().setUserLastName(lastName);
+                UserInfo.getInstance().setUserEmail(newEmail);
+                UserInfo.getInstance().setUserPhone(newPhone);
+                UserInfo.getInstance().setUserBirth(newBirth);
+                UserInfo.getInstance().setUserGender(newGender);
+
+                // UI 업데이트
+                updateUserInfoUI();
+
                 JOptionPane.showMessageDialog(this, "User information updated successfully!");
             } else {
-                JOptionPane.showMessageDialog(this, "Failed to update user information.");
+                JOptionPane.showMessageDialog(this, "Failed to update user information or no changes detected.");
             }
         }
+    }
+
+    public void updateUserInfoUI() {
+        UserInfo user = UserInfo.getInstance();
+        this.userName = user.getUserFirstName() + " " + user.getUserLastName();
+        this.followingCount = user.getFollowingCount();
+        this.followerCount = user.getFollowerCount();
+
+        displayNameLabel.setText(userName);
+        followingLabel.setText("Following: " + followingCount + "  |  Followers: " + followerCount);
+
+        // Follow 정보 동적 업데이트
+        updateFollowStats();
+
+        revalidate();
+        repaint();
+    }
+
+    // 팔로잉/팔로워 정보를 동적으로 업데이트하는 메서드
+    public void updateFollowStats() {
+        UserInfo user = UserInfo.getInstance();
+        followingLabel.setText("Following: " + user.getFollowingCount() + "  |  Followers: " + user.getFollowerCount());
     }
 }
