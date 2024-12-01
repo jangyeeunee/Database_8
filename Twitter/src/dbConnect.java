@@ -62,7 +62,7 @@ public class dbConnect {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             String url = "jdbc:mysql://localhost:3306/TWITTER";
-                String user = "root", passwd = "wldmsdl7715";
+                String user = "root", passwd = "tndk1008";
             con = DriverManager.getConnection(url, user, passwd);
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);

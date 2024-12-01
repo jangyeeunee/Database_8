@@ -65,6 +65,12 @@ public class BottomPanel {
         userButton = createIconButton("icon/userIcon.png");
         userButton.addActionListener(e -> {
             updateIcons("User");
+            dbConnect db = dbConnect.getInstance();
+            db.updateFollowStats(UserInfo.getInstance().getUserId());
+            TwitterUserPage userpage = TwitterUserPage.getInstance();
+            userpage.setFollowerCount(UserInfo.getInstance().getFollowerCount());
+            userpage.setFollowingCount(UserInfo.getInstance().getFollowingCount());
+            userpage.updateUserInfoUI();
             MainFrame.getInstance().showPage("User"); // Show User Page
         });
     }

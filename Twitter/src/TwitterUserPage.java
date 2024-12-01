@@ -4,7 +4,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.Arrays;
+
 public class TwitterUserPage extends JPanel {
+    public static TwitterUserPage twitterUserPage;
+
     private String userId;
     private String userName;
     private int followingCount;
@@ -13,6 +16,13 @@ public class TwitterUserPage extends JPanel {
     private JPanel postsPanel;
     private JLabel displayNameLabel;
     private JLabel followingLabel;
+
+    public static TwitterUserPage getInstance() {
+        if (twitterUserPage == null) {
+            twitterUserPage = new TwitterUserPage();
+        }
+        return twitterUserPage;
+    }
 
     public TwitterUserPage() {
         UserInfo userInfo = UserInfo.getInstance();
@@ -70,18 +80,12 @@ public class TwitterUserPage extends JPanel {
             editButton.setFont(new Font("Arial", Font.BOLD, 14));
             editButton.addActionListener(e -> handleEditButtonClick());
 
-            // Refresh Button
-            JButton refreshButton = new JButton("Refresh");
-            refreshButton.setBackground(new Color(29, 161, 242));
-            refreshButton.setForeground(Color.BLACK);
-            refreshButton.setFont(new Font("Arial", Font.BOLD, 10));
-            refreshButton.addActionListener(e -> handleRefreshButtonClick());
 
             // Button Panel for Edit and Refresh
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));  // FlowLayout을 사용하여 오른쪽으로 배치
             buttonPanel.setBackground(Color.WHITE);
-            buttonPanel.add(refreshButton);  
-            buttonPanel.add(editButton);   
+
+            buttonPanel.add(editButton);
             // Add buttonPanel to the EAST of profilePanel
             profilePanel.add(buttonPanel, BorderLayout.EAST);
         }
@@ -169,7 +173,7 @@ public class TwitterUserPage extends JPanel {
 
     private void handleEditButtonClick() {
         // 기존 코드
-        JPasswordField newPasswordField = new JPasswordField(20); 
+        JPasswordField newPasswordField = new JPasswordField(20);
         JTextField newNameField = new JTextField(UserInfo.getInstance().getUserFirstName() + " " + UserInfo.getInstance().getUserLastName());
         JTextField newEmailField = new JTextField(UserInfo.getInstance().getUserEmail());
         JTextField newPhoneField = new JTextField(UserInfo.getInstance().getUserPhone());
@@ -177,18 +181,18 @@ public class TwitterUserPage extends JPanel {
         JTextField newGenderField = new JTextField(UserInfo.getInstance().getUserGender());
 
         Object[] fields = {
-            "New Password:", newPasswordField,
-            "Name:", newNameField,
-            "Email:", newEmailField,
-            "Phone Number:", newPhoneField,
-            "Birth Date:", newBirthField,
-            "Gender:", newGenderField
+                "New Password:", newPasswordField,
+                "Name:", newNameField,
+                "Email:", newEmailField,
+                "Phone Number:", newPhoneField,
+                "Birth Date:", newBirthField,
+                "Gender:", newGenderField
         };
 
         int option = JOptionPane.showConfirmDialog(this, fields, "Edit User Info", JOptionPane.OK_CANCEL_OPTION);
 
         if (option == JOptionPane.OK_OPTION) {
-            String newPassword = new String(newPasswordField.getPassword()); 
+            String newPassword = new String(newPasswordField.getPassword());
             String newName = newNameField.getText();
             String newEmail = newEmailField.getText();
             String newPhone = newPhoneField.getText();
@@ -221,15 +225,19 @@ public class TwitterUserPage extends JPanel {
 
     }
 
-    private void handleRefreshButtonClick() {
-        dbConnect db = dbConnect.getInstance();
-        db.setUserInfo(userId); // 최신 정보를 가져오고 UI 갱신
-        updateUserInfoUI();
-    }
-
-    private void updateUserInfoUI() {
+    public void updateUserInfoUI() {
         UserInfo userInfo = UserInfo.getInstance();
         displayNameLabel.setText(userInfo.getUserFirstName() + " " + userInfo.getUserLastName());
         followingLabel.setText("Following: " + userInfo.getFollowingCount() + " | Followers: " + userInfo.getFollowerCount());
     }
+
+    public void setFollowingCount(int followingCount) {
+        this.followingCount = followingCount;
+    }
+
+    public void setFollowerCount(int followerCount) {
+        this.followerCount = followerCount;
+    }
+
+
 }
