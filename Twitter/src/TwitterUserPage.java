@@ -21,6 +21,7 @@ public class TwitterUserPage extends JPanel {
         if (twitterUserPage == null) {
             twitterUserPage = new TwitterUserPage();
         }
+        twitterUserPage.createAndShowGUI();
         return twitterUserPage;
     }
 
@@ -35,7 +36,7 @@ public class TwitterUserPage extends JPanel {
         updateUserInfoUI();
     }
 
-    private void createAndShowGUI() {
+    public void createAndShowGUI() {
         setLayout(new BorderLayout());
 
         // Profile Info Panel
